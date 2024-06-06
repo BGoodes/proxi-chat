@@ -3,6 +3,8 @@ import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
 
+import handleConnection from "./connectionHandler.js";
+
 const PORT = 3000
 
 const app = express()
@@ -13,6 +15,10 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     } 
 })
+
+io.on("connection", (socket) => {
+    handleConnection(socket, io)
+});
 
 app.use(sirv('public'))
 app.listen(PORT, () => {
