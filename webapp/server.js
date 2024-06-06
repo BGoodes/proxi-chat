@@ -3,7 +3,7 @@ import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
 
-import handleConnection from "./connection/connectionHandler.js";
+import handleConnection from "./handlers/connectionHandler.js";
 
 const PORT = 3000;
 
@@ -21,6 +21,6 @@ io.on("connection", (socket) => {
 });
 
 app.use(sirv('public'));
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 })
