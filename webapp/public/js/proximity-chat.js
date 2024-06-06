@@ -20,16 +20,16 @@ class ProximityChat {
             this.handleNewPeer(data);
         });
 
-        this.socket.on('update-coordinates', (data) => {
-            this.handleUpdateCoordinates(data);
+        this.socket.on('disconnect-peer', (data) => {
+            this.handlePeerDisconnected(data);
         });
 
         this.socket.on('signal', (data) => {
             this.handleSignal(data);
         });
 
-        this.socket.on('disconnect-peer', (data) => {
-            this.handlePeerDisconnected(data);
+        this.socket.on('update-coordinates', (data) => {
+            this.handleUpdateCoordinates(data);
         });
 
         this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -39,17 +39,17 @@ class ProximityChat {
         console.log('New peer connected', data);
     }
 
+    handlePeerDisconnected(data) {
+        console.log('Peer disconnected', data);
+    }
+    
     handleUpdateCoordinates(data) {
         console.log('Update coordinates', data);
         // audio panning based on coordinates
     }
 
     handleSignal(data) {
-        console.log('WebRTC signal', data);
-    }
-
-    handlePeerDisconnected(data) {
-        console.log('Peer disconnected', data);
+        console.log('Signal received', data);
     }
 }
 

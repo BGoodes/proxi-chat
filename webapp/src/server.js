@@ -3,7 +3,7 @@ import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
 
-import handleConnection from "./handlers/connectionHandler.js";
+import handleConnection from "./connectionHandler.js";
 
 const PORT = 3000;
 

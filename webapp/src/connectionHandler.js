@@ -12,14 +12,11 @@ function handleConnection(socket, io) {
         socket.broadcast.emit('disconnect-peer', { userId: socket.userId, socketId: socket.id });
     });
 
-    // Signaling for WebRTC
     socket.on('signal', (data) => {
-        console.log(`Signal from ${socket.id} to ${data.target}: ${data.type}`);
-        io.to(data.target).emit('signal', {
-            type: data.type,
-            sdp: data.sdp,
+        console.log(`Signal from ${socket.id} to ${data.userId}`);
+        io.to(data.userId).emit('signal', {
             userId: socket.userId,
-            socketId: socket.id
+            signal: data.signal
         });
     });
 
