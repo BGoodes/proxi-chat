@@ -3,12 +3,12 @@ import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
 
-import handleConnection from "./connectionHandler.js";
+import handleConnection from "./connection/connectionHandler.js";
 
-const PORT = 3000
+const PORT = 3000;
 
-const app = express()
-const server = createServer(app)
+const app = express();
+const server = createServer(app);
 const io = new Server(server, {
      cors: { 
         origin: '*',
@@ -17,10 +17,10 @@ const io = new Server(server, {
 })
 
 io.on("connection", (socket) => {
-    handleConnection(socket, io)
+    handleConnection(socket, io);
 });
 
-app.use(sirv('public'))
+app.use(sirv('public'));
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
+    console.log(`Server is running on http://localhost:${PORT}`);
 })
