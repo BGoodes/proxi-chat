@@ -1,4 +1,17 @@
 class ProximityChat {
+
+    config = {
+        "iceServers": [
+            {
+                "urls": [
+                    "stun:stun.l.google.com:19302",
+                    "stun:stun1.l.google.com:19302",
+                    "stun:stun2.l.google.com:19302"
+                ]
+            }
+        ]
+    };
+
     constructor(serverUrl) {
         this.serverUrl = serverUrl;
         this.socket = null;
@@ -51,6 +64,10 @@ class ProximityChat {
 
     handlePeerDisconnected(data) {
         console.log('Peer disconnected', data);
+        const peerId = data.socketId;
+        this.peers[peerId].close();
+        delete this.peers[peerId];
+        this.removeAudioElement(peerId);
     }
 
     // not really sure about this
@@ -87,7 +104,7 @@ class ProximityChat {
     }
 
     createPeerConnection(peerId) {
-        const connection = new RTCPeerConnection();
+        const connection = new RTCPeerConnection(this.config);
 
         this.localStream.getTracks().forEach(track => {
             connection.addTrack(track, this.localStream);
@@ -118,6 +135,11 @@ class ProximityChat {
         audioElement.autoplay = true;
         audioElement.controls = true;
         audioContainer.appendChild(audioElement);
+    }
+
+    removeAudioElement(peerId) {
+        const audioElement = document.getElementById(`audio-${peerId}`);
+        audioElement.remove();
     }
 }
 
