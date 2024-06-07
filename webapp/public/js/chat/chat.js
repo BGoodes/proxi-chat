@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     document.getElementById('connectButton').addEventListener('click', () => {
+        document.getElementById('connectButton').disabled = true;
         initializeChat();
     });
 });
