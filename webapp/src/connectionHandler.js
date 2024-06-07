@@ -22,6 +22,7 @@ function handleConnection(socket, io) {
         console.log(`Signaling message from ${socket.id} to ${data.to}`);
         io.to(data.to).emit('signalingMessage', {
             from: socket.id,
+            userId: socket.userId,
             type: data.type,
             sdp: data.sdp,
             candidate: data.candidate

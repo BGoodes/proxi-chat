@@ -15,38 +15,23 @@ class ProximityChat {
             this.socket.emit('join', { userId, type });
         });
 
-        if (type === 'player') {
-            this.socket.on('newPeer', (data) => {
-                this.handleNewPeer(data);
-            });
+        this.socket.on('newPeer', this.handleNewPeer.bind(this));
+        this.socket.on('peerDisconnected', this.handlePeerDisconnected.bind(this));
+        this.socket.on('signalingMessage', this.handleSignalingMessage.bind(this));
+        this.socket.on('coordinatesUpdate', this.handleCoordinatesUpdate.bind(this));
 
-            this.socket.on('peerDisconnected', (data) => {
-                this.handlePeerDisconnected(data);
-            });
-
-            this.socket.on('signalingMessage', (data) => {
-                this.handleSignalingMessage(data);
-            });
-
-            this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        }
-
-        if (type === 'game') {
-            this.socket.on('coordinatesUpdate', (data) => {
-                this.handleCoordinatesUpdate(data);
-            });
-        }
+        this.localStream = await navigator.mediaDevices.getUserMedia({audio: true});
     }
 
     handleNewPeer(data) {
         console.log('New peer connected', data);
-        const peerId = data.socketId;
-        this.createPeerConnection(peerId, true);
+        const {socketId: peerId, userId} = data;
+        this.createPeerConnection(userId, peerId, true);
     }
 
     handlePeerDisconnected(data) {
         console.log('Peer disconnected', data);
-        const peerId = data.socketId;
+        const {socketId: peerId} = data;
         if (this.peers[peerId]) {
             this.peers[peerId].destroy();
             delete this.peers[peerId];
@@ -56,21 +41,20 @@ class ProximityChat {
 
     handleSignalingMessage(data) {
         console.log('Signal received', data);
-        const peerId = data.from;
+        const {from: peerId, userId} = data;
         if (!this.peers[peerId]) {
-            this.createPeerConnection(peerId, false);
+            this.createPeerConnection(userId, peerId, false);
         }
         this.peers[peerId].signal(data);
     }
 
     handleCoordinatesUpdate(data) {
         console.log('Update coordinates', data);
-        // Implement audio panning based on coordinates
     }
 
-    createPeerConnection(peerId, initiator) {
+    createPeerConnection(userId, peerId, initiator) {
         const peer = new SimplePeer({
-            initiator: initiator,
+            initiator,
             stream: this.localStream,
             config: {
                 iceServers: [
@@ -82,14 +66,11 @@ class ProximityChat {
         });
 
         peer.on('signal', (data) => {
-            this.socket.emit('signalingMessage', {
-                to: peerId,
-                ...data
-            });
+            this.socket.emit('signalingMessage', {to: peerId, userId, ...data});
         });
 
         peer.on('stream', (stream) => {
-            this.addAudioElement(peerId, stream);
+            this.addAudioElement(userId, peerId, stream);
         });
 
         peer.on('close', () => {
@@ -103,7 +84,7 @@ class ProximityChat {
         this.peers[peerId] = peer;
     }
 
-    addAudioElement(peerId, stream) {
+    addAudioElement(userId, peerId, stream) {
         const audioContainer = document.getElementById('audioContainer');
         const audioElement = document.createElement('audio');
         audioElement.id = `audio-${peerId}`;
