@@ -1,15 +1,21 @@
 function handleConnection(socket, io) {
-    console.log("User connected with id", socket.id);
+    console.log("Socket connected with id", socket.id);
 
     socket.on('join', (data) => {
-        console.log(`Player joined: ${data.userId}`);
+        console.log(`${data.type} joined: ${data.userId}`);
         socket.userId = data.userId;
-        socket.broadcast.emit('newPeer', { userId: data.userId, socketId: socket.id });
+        socket.type = data.type; // 'player' or 'game'
+
+        if (data.type === 'player') {
+            socket.broadcast.emit('newPeer', { userId: data.userId, socketId: socket.id });
+        }
     });
 
     socket.on('disconnect', () => {
-        console.log(`Player leave: ${socket.id}`);
-        socket.broadcast.emit('peerDisconnected', { userId: socket.userId, socketId: socket.id });
+        console.log(`Peer leave: ${socket.id}`);
+        if (socket.type === 'player') {
+            socket.broadcast.emit('peerDisconnected', { userId: socket.userId, socketId: socket.id });
+        }
     });
 
     socket.on('signalingMessage', (data) => {
@@ -23,10 +29,13 @@ function handleConnection(socket, io) {
     });
 
     socket.on('coordinates', (data) => {
-        socket.broadcast.emit('coordinatesUpdate', {
-            userId: socket.userId,
-            coordinates: data.coordinates
-        });
+        if (socket.type === 'game') {
+            console.log(`Coordinates update from game: ${socket.userId}`);
+            socket.broadcast.emit('coordinatesUpdate', {
+                userId: socket.userId, // player ID
+                coordinates: data.coordinates // player coordinates
+            });
+        }
     });
 }
 

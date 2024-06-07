@@ -7,31 +7,35 @@ class ProximityChat {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    async initialize(userId) {
+    async initialize(userId, type = 'player') {
         this.socket = io.connect(this.serverUrl);
 
         this.socket.on('connect', () => {
             console.log('Connected to signaling server');
-            this.socket.emit('join', { userId });
+            this.socket.emit('join', { userId, type });
         });
 
-        this.socket.on('newPeer', (data) => {
-            this.handleNewPeer(data);
-        });
+        if (type === 'player') {
+            this.socket.on('newPeer', (data) => {
+                this.handleNewPeer(data);
+            });
 
-        this.socket.on('peerDisconnected', (data) => {
-            this.handlePeerDisconnected(data);
-        });
+            this.socket.on('peerDisconnected', (data) => {
+                this.handlePeerDisconnected(data);
+            });
 
-        this.socket.on('signalingMessage', (data) => {
-            this.handleSignalingMessage(data);
-        });
+            this.socket.on('signalingMessage', (data) => {
+                this.handleSignalingMessage(data);
+            });
 
-        this.socket.on('coordinatesUpdate', (data) => {
-            this.handleCoordinatesUpdate(data);
-        });
+            this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
 
-        this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (type === 'game') {
+            this.socket.on('coordinatesUpdate', (data) => {
+                this.handleCoordinatesUpdate(data);
+            });
+        }
     }
 
     handleNewPeer(data) {
