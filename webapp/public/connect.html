@@ -9,12 +9,12 @@
         <link rel="stylesheet" href="./css/style.css">
     </head>
     <body>
-        <h1 class="mt-5">Proximity Chat</h1>
-        <button id="connectButton" class="btn btn-primary mt-3">Connect</button>
-        <div id="audioContainer" class="mt-3"></div>
+        <h1 class="mt-5">Enter Your Pseudo</h1>
+        <div class="form-group">
+            <input type="text" id="pseudo" class="form-control mt-3" placeholder="Enter your pseudo">
+        </div>
+        <button id="enterButton" class="btn btn-primary mt-3">Enter Chat</button>
 
-        <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/simple-peer/simplepeer.min.js"></script>
-        <script type="module" src="./js/chat/chat.js"></script>
+        <script src="./js/connect.js"></script>
     </body>
 </html>
