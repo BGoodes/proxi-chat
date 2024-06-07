@@ -4,25 +4,27 @@ function handleConnection(socket, io) {
     socket.on('join', (data) => {
         console.log(`Player joined: ${data.userId}`);
         socket.userId = data.userId;
-        socket.broadcast.emit('connect-peer', { userId: data.userId, socketId: socket.id });
+        socket.broadcast.emit('newPeer', { userId: data.userId, socketId: socket.id });
     });
 
     socket.on('leave', () => {
         console.log(`Player leave: ${socket.id}`);
-        socket.broadcast.emit('disconnect-peer', { userId: socket.userId, socketId: socket.id });
+        socket.broadcast.emit('peerDisconnected', { userId: socket.userId, socketId: socket.id });
     });
 
-    socket.on('signal', (data) => {
-        console.log(`Signal from ${socket.id} to ${data.userId}`);
-        io.to(data.userId).emit('signal', {
-            userId: socket.userId,
-            signal: data.signal
+    socket.on('signalingMessage', (data) => {
+        console.log(`Signaling message from ${socket.id} to ${data.to}`);
+        io.to(data.to).emit('signalingMessage', {
+            from: socket.id,
+            type: data.type,
+            sdp: data.sdp,
+            candidate: data.candidate
         });
     });
 
-    // Broadcast player's coordinates to other players
+    // Broadcast player's game coordinates to other players.
     socket.on('coordinates', (data) => {
-        socket.broadcast.emit('update-coordinates', {
+        socket.broadcast.emit('coordinatesUpdate', {
           userId: socket.userId,
           coordinates: data.coordinates
         });
