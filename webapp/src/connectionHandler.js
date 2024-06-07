@@ -7,7 +7,7 @@ function handleConnection(socket, io) {
         socket.broadcast.emit('newPeer', { userId: data.userId, socketId: socket.id });
     });
 
-    socket.on('leave', () => {
+    socket.on('disconnect', () => {
         console.log(`Player leave: ${socket.id}`);
         socket.broadcast.emit('peerDisconnected', { userId: socket.userId, socketId: socket.id });
     });
@@ -22,11 +22,10 @@ function handleConnection(socket, io) {
         });
     });
 
-    // Broadcast player's game coordinates to other players.
     socket.on('coordinates', (data) => {
         socket.broadcast.emit('coordinatesUpdate', {
-          userId: socket.userId,
-          coordinates: data.coordinates
+            userId: socket.userId,
+            coordinates: data.coordinates
         });
     });
 }

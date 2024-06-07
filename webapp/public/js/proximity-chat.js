@@ -1,17 +1,4 @@
 class ProximityChat {
-
-    config = {
-        "iceServers": [
-            {
-                "urls": [
-                    "stun:stun.l.google.com:19302",
-                    "stun:stun1.l.google.com:19302",
-                    "stun:stun2.l.google.com:19302"
-                ]
-            }
-        ]
-    };
-
     constructor(serverUrl) {
         this.serverUrl = serverUrl;
         this.socket = null;
@@ -28,16 +15,16 @@ class ProximityChat {
             this.socket.emit('join', { userId });
         });
 
-        this.socket.on('newPeer', async (data) => {
-            await this.handleNewPeer(data);
+        this.socket.on('newPeer', (data) => {
+            this.handleNewPeer(data);
         });
 
         this.socket.on('peerDisconnected', (data) => {
             this.handlePeerDisconnected(data);
         });
 
-        this.socket.on('signalingMessage', async (data) => {
-            await this.handleSignalingMessage(data);
+        this.socket.on('signalingMessage', (data) => {
+            this.handleSignalingMessage(data);
         });
 
         this.socket.on('coordinatesUpdate', (data) => {
@@ -47,84 +34,69 @@ class ProximityChat {
         this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     }
 
-    async handleNewPeer(data) {
+    handleNewPeer(data) {
         console.log('New peer connected', data);
         const peerId = data.socketId;
-        this.createPeerConnection(peerId);
-
-        const offer = await this.peers[peerId].createOffer();
-        await this.peers[peerId].setLocalDescription(offer);
-
-        this.socket.emit('signalingMessage', {
-            to: peerId,
-            type: 'offer',
-            sdp: this.peers[peerId].localDescription
-        });
+        this.createPeerConnection(peerId, true);
     }
 
     handlePeerDisconnected(data) {
         console.log('Peer disconnected', data);
         const peerId = data.socketId;
-        this.peers[peerId].close();
-        delete this.peers[peerId];
-        this.removeAudioElement(peerId);
+        if (this.peers[peerId]) {
+            this.peers[peerId].destroy();
+            delete this.peers[peerId];
+            this.removeAudioElement(peerId);
+        }
     }
 
-    // not really sure about this
-    async handleSignalingMessage(data) {
+    handleSignalingMessage(data) {
         console.log('Signal received', data);
         const peerId = data.from;
-        let peerConnection = this.peers[peerId];
-
-        if (!peerConnection) {
-            this.createPeerConnection(peerId);
-            peerConnection = this.peers[peerId];
+        if (!this.peers[peerId]) {
+            this.createPeerConnection(peerId, false);
         }
-
-        if (data.type === 'offer') {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-
-            this.socket.emit('signalingMessage', {
-                to: peerId,
-                type: 'answer',
-                sdp: peerConnection.localDescription
-            });
-        } else if (data.type === 'answer') {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-        } else if (data.type === 'candidate') {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-        }
+        this.peers[peerId].signal(data);
     }
 
     handleCoordinatesUpdate(data) {
         console.log('Update coordinates', data);
-        // audio panning based on coordinates
+        // Implement audio panning based on coordinates
     }
 
-    createPeerConnection(peerId) {
-        const connection = new RTCPeerConnection(this.config);
-
-        this.localStream.getTracks().forEach(track => {
-            connection.addTrack(track, this.localStream);
+    createPeerConnection(peerId, initiator) {
+        const peer = new SimplePeer({
+            initiator: initiator,
+            stream: this.localStream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            }
         });
 
-        connection.ontrack = (event) => {
-            this.addAudioElement(peerId, event.streams[0]);
-        };
+        peer.on('signal', (data) => {
+            this.socket.emit('signalingMessage', {
+                to: peerId,
+                ...data
+            });
+        });
 
-        connection.onicecandidate = (event) => {
-            if (event.candidate) {
-                this.socket.emit('signalingMessage', {
-                    to: peerId,
-                    type: 'candidate',
-                    candidate: event.candidate
-                });
-            }
-        };
+        peer.on('stream', (stream) => {
+            this.addAudioElement(peerId, stream);
+        });
 
-        this.peers[peerId] = connection;
+        peer.on('close', () => {
+            this.handlePeerDisconnected({ socketId: peerId });
+        });
+
+        peer.on('error', (err) => {
+            console.error(`Peer connection error (${peerId}):`, err);
+        });
+
+        this.peers[peerId] = peer;
     }
 
     addAudioElement(peerId, stream) {
@@ -139,7 +111,9 @@ class ProximityChat {
 
     removeAudioElement(peerId) {
         const audioElement = document.getElementById(`audio-${peerId}`);
-        audioElement.remove();
+        if (audioElement) {
+            audioElement.remove();
+        }
     }
 }
 
