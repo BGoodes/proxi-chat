@@ -23,12 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
             audioContext.resume();
         }
 
-        fetch('sound.mp3')
-            .then(response => response.arrayBuffer())
-            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-            .then(audioBuffer => {
-                const soundSource = audioContext.createBufferSource();
-                soundSource.buffer = audioBuffer;
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                const microphoneSource = audioContext.createMediaStreamSource(stream);
 
                 const panner = audioContext.createPanner();
                 panner.panningModel = 'HRTF';
@@ -42,17 +39,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const pannerX = user2.offsetLeft;
                 const pannerY = user2.offsetTop;
-                
+
                 panner.positionX.setValueAtTime(pannerX, audioContext.currentTime);
                 panner.positionY.setValueAtTime(pannerY, audioContext.currentTime);
                 panner.positionZ.setValueAtTime(0, audioContext.currentTime);
 
-                soundSource.connect(panner);
+                microphoneSource.connect(panner);
                 panner.connect(audioContext.destination);
-
-                soundSource.start();
             })
-            .catch(e => console.error('Error with fetching or decoding audio data:', e));
+            .catch(e => console.error('Error accessing microphone:', e));
     });
 
     let isDragging = false;
