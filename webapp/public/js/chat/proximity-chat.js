@@ -95,16 +95,18 @@ class ProximityChat {
     }
 
     addAudioElement(userId, peerId, stream) {
-        const audioContainer = document.getElementById('audioContainer');
-        const audioElement = document.createElement('audio');
-        audioElement.id = `audio-${peerId}`;
-        audioElement.srcObject = stream;
-        audioElement.autoplay = true;
-        audioElement.controls = true;
-        audioContainer.appendChild(audioElement);
-
-        const panner = this.createPanner();
+        const panner = this.audioContext.createPanner();
         const source = this.audioContext.createMediaStreamSource(stream);
+
+        panner.panningModel = 'HRTF';
+        panner.distanceModel = 'linear';
+        panner.refDistance = 1;
+        panner.maxDistance = 600;
+        panner.rolloffFactor = 1;
+        panner.coneInnerAngle = 360;
+        panner.coneOuterAngle = 0;
+        panner.coneOuterGain = 0;
+
         source.connect(panner);
         panner.connect(this.audioContext.destination);
 
@@ -112,24 +114,8 @@ class ProximityChat {
     }
 
     removeAudioElement(peerId) {
-        const audioElement = document.getElementById(`audio-${peerId}`);
-        if (audioElement) {
-            audioElement.remove();
-        }
-    }
-
-    // Panner
-    createPanner() {
-        const panner = this.audioContext.createPanner();
-        panner.panningModel = 'HRTF';
-        panner.distanceModel = 'inverse';
-        panner.refDistance = 1;
-        panner.maxDistance = 600;
-        panner.rolloffFactor = 1;
-        panner.coneInnerAngle = 360;
-        panner.coneOuterAngle = 0;
-        panner.coneOuterGain = 0;
-        return panner;
+        this.panners[peerId].disconnect();
+        delete this.panners[peerId];
     }
 
     updatePannerPosition(userId, coordinates) {
