@@ -1,5 +1,5 @@
 {
-  "name": "poc-audio",
+  "name": "poc-panner",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
