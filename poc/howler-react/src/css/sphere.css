@@ -1,0 +1,15 @@
+    .prevent-select {
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    .sphere {
+        width: 100px;
+        height: 100px;
+        background-color: #ee6969;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
