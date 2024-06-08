@@ -5,9 +5,12 @@ class ProximityChat {
         this.localStream = null;
         this.peers = {};
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.panners = {};
+        this.userId = null;
     }
 
     async initialize(userId, type = 'player') {
+        this.userId = userId;
         this.socket = io.connect(this.serverUrl);
 
         this.socket.on('connect', () => {
@@ -21,6 +24,7 @@ class ProximityChat {
         this.socket.on('coordinatesUpdate', this.handleCoordinatesUpdate.bind(this));
 
         this.localStream = await navigator.mediaDevices.getUserMedia({audio: true});
+        this.audioContext.listener.setPosition(0, 0, 0); // to change
     }
 
     handleNewPeer(data) {
@@ -50,6 +54,12 @@ class ProximityChat {
 
     handleCoordinatesUpdate(data) {
         console.log('Update coordinates', data);
+        const {userId, coordinates} = data;
+        if (this.userId === userId) {
+            this.updateListenerPosition(coordinates);
+        } else {
+            this.updatePannerPosition(userId, coordinates);
+        }
     }
 
     createPeerConnection(userId, peerId, initiator) {
@@ -92,12 +102,56 @@ class ProximityChat {
         audioElement.autoplay = true;
         audioElement.controls = true;
         audioContainer.appendChild(audioElement);
+
+        const panner = this.createPanner();
+        const source = this.audioContext.createMediaStreamSource(stream);
+        source.connect(panner);
+        panner.connect(this.audioContext.destination);
+
+        this.panners[userId] = panner;
     }
 
     removeAudioElement(peerId) {
         const audioElement = document.getElementById(`audio-${peerId}`);
         if (audioElement) {
             audioElement.remove();
+        }
+    }
+
+    // Panner
+    createPanner() {
+        const panner = this.audioContext.createPanner();
+        panner.panningModel = 'HRTF';
+        panner.distanceModel = 'inverse';
+        panner.refDistance = 1;
+        panner.maxDistance = 600;
+        panner.rolloffFactor = 1;
+        panner.coneInnerAngle = 360;
+        panner.coneOuterAngle = 0;
+        panner.coneOuterGain = 0;
+        return panner;
+    }
+
+    updatePannerPosition(userId, coordinates) {
+        console.log('Update panner position', userId, coordinates);
+        const panner = this.panners[userId];
+        const {x, y, z} = coordinates;
+        if (!panner) return;
+
+        panner.positionX.setValueAtTime(x, this.audioContext.currentTime);
+        panner.positionY.setValueAtTime(y, this.audioContext.currentTime);
+        panner.positionZ.setValueAtTime(z, this.audioContext.currentTime);
+    }
+
+    updateListenerPosition(coordinates) {
+        console.log('Update listener position', coordinates);
+        const {x, y, z} = coordinates;
+        if (this.audioContext.listener.positionX) {
+            this.audioContext.listener.positionX.setValueAtTime(x, this.audioContext.currentTime);
+            this.audioContext.listener.positionY.setValueAtTime(y, this.audioContext.currentTime);
+            this.audioContext.listener.positionZ.setValueAtTime(z, this.audioContext.currentTime);
+        } else {
+            this.audioContext.listener.setPosition(x, y, z);
         }
     }
 }

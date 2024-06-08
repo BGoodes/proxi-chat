@@ -15,11 +15,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const rect = userElement.getBoundingClientRect();
         const x = e.clientX - rect.width / 2;
         const y = e.clientY - rect.height / 2;
+        const z = 0;
 
         userElement.style.left = `${x}px`;
         userElement.style.top = `${y}px`;
 
-        socket.emit('coordinates', { coordinates: { x, y } });
+        console.log('Emitting coordinates', { x, y, z });
+        socket.emit('coordinates', { coordinates: { x, y, z } });
     }
 
     function onMouseUp() {
