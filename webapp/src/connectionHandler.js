@@ -33,7 +33,7 @@ function handleConnection(socket, io) {
         if (socket.type === 'game') {
             console.log(`Coordinates update from game: ${socket.userId}`);
             socket.broadcast.emit('coordinatesUpdate', {
-                userId: socket.userId, // player ID
+                userId: data.userId, // player ID
                 coordinates: data.coordinates // player coordinates
             });
         }

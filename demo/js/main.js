@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         userElement.style.top = `${y}px`;
 
         console.log('Emitting coordinates', { x, y, z });
-        socket.emit('coordinates', { coordinates: { x, y, z } });
+        socket.emit('coordinates', { userId: "user", coordinates: { x, y, z } });
     }
 
     function onMouseUp() {
