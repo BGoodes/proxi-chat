@@ -3,7 +3,9 @@ import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
 
-import handleConnection from "./connectionHandler.js";
+import handleConnection from "./handlers/socketHandler.js";
+import setupRestRoutes from "./handlers/restHandler.js";
+
 
 const PORT = 3000;
 
@@ -16,10 +18,16 @@ const io = new Server(server, {
     } 
 })
 
+// Socket.io
 io.on("connection", (socket) => {
     handleConnection(socket, io);
 });
 
+// REST
+app.use(express.json());
+setupRestRoutes(app, io);
+
+// Static files
 app.use(sirv('public'));
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
