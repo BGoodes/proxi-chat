@@ -6,7 +6,6 @@ import sirv from "sirv";
 import handleConnection from "./handlers/socketHandler.js";
 import setupRestRoutes from "./handlers/restHandler.js";
 
-
 const PORT = 3000;
 
 const app = express();
@@ -25,7 +24,7 @@ io.on("connection", (socket) => {
 
 // REST
 app.use(express.json());
-setupRestRoutes(app, io);
+app.use('/api/v1', setupRestRoutes(io));
 
 // Static files
 app.use(sirv('public'));

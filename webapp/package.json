@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
+    "joi": "^17.13.1",
     "sirv": "^2.0.4",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5"
