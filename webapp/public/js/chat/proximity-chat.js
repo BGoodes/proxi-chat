@@ -44,7 +44,6 @@ class ProximityChat {
     }
 
     handleSignalingMessage(data) {
-        console.log('Signal received', data);
         const {from: peerId, userId} = data;
         if (!this.peers[peerId]) {
             this.createPeerConnection(userId, peerId, false);
@@ -53,7 +52,6 @@ class ProximityChat {
     }
 
     handleCoordinatesUpdate(data) {
-        console.log('Update coordinates', data);
         const {userId, coordinates} = data;
         if (this.userId === userId) {
             this.updateListenerPosition(coordinates);
@@ -80,7 +78,7 @@ class ProximityChat {
         });
 
         peer.on('stream', (stream) => {
-            this.addAudioElement(userId, peerId, stream);
+            this.addAudioElement(userId, stream);
         });
 
         peer.on('close', () => {
@@ -94,7 +92,7 @@ class ProximityChat {
         this.peers[peerId] = peer;
     }
 
-    addAudioElement(userId, peerId, stream) {
+    addAudioElement(userId, stream) {
         const panner = this.audioContext.createPanner();
         const source = this.audioContext.createMediaStreamSource(stream);
 
