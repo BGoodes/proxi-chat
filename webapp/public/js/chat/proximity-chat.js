@@ -35,11 +35,11 @@ class ProximityChat {
 
     handlePeerDisconnected(data) {
         console.log('Peer disconnected', data);
-        const {socketId: peerId} = data;
+        const {userId, socketId: peerId} = data;
         if (this.peers[peerId]) {
             this.peers[peerId].destroy();
             delete this.peers[peerId];
-            this.removeAudioElement(peerId);
+            this.removeAudioElement(userId);
         }
     }
 
@@ -111,9 +111,9 @@ class ProximityChat {
         this.panners[userId] = panner;
     }
 
-    removeAudioElement(peerId) {
-        this.panners[peerId].disconnect();
-        delete this.panners[peerId];
+    removeAudioElement(userId) {
+        this.panners[userId].disconnect();
+        delete this.panners[userId];
     }
 
     updatePannerPosition(userId, coordinates) {

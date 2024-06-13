@@ -2,7 +2,7 @@ function handleConnection(socket, io) {
     console.log("Socket connected with id", socket.id);
 
     socket.on('join', (data) => {
-        console.log(`${data.type} joined: ${data.userId}`);
+        console.log(`$Peer joined: ${data.userId}`);
         socket.userId = data.userId;
         socket.type = data.type; // 'player' or 'game'
 
@@ -12,7 +12,7 @@ function handleConnection(socket, io) {
     });
 
     socket.on('disconnect', () => {
-        console.log(`Peer leave: ${socket.id}`);
+        console.log(`Peer leave: ${socket.userId}`);
         if (socket.type === 'player') {
             socket.broadcast.emit('peerDisconnected', { userId: socket.userId, socketId: socket.id });
         }
@@ -33,8 +33,8 @@ function handleConnection(socket, io) {
         if (socket.type === 'game') {
             console.log(`Coordinates update from game: ${socket.userId}`);
             socket.broadcast.emit('coordinatesUpdate', {
-                userId: data.userId, // player ID
-                coordinates: data.coordinates // player coordinates
+                userId: data.userId,
+                coordinates: data.coordinates
             });
         }
     });
