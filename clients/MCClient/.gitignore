@@ -1,0 +1,20 @@
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+.gradletasknamecache
+
+### IntelliJ IDEA ###
+.idea/
+out/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
