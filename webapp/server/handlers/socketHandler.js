@@ -2,7 +2,7 @@ function handleConnection(socket, io) {
     console.log("Socket connected with id", socket.id);
 
     socket.on('join', (data) => {
-        console.log(`$Peer joined: ${data.userId}`);
+        console.log(`Peer joined: ${data.userId}`);
         socket.userId = data.userId;
         socket.type = data.type; // 'player' or 'game'
 
