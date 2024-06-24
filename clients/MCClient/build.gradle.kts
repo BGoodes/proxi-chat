@@ -21,6 +21,8 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT")
+
+    implementation("io.socket:socket.io-client:2.1.0")
 }
 
 tasks.shadowJar {
