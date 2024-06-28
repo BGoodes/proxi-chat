@@ -34,7 +34,8 @@ function handleConnection(socket, io) {
             console.log(`Position update from game: ${socket.userId} for ${data.userId}`);
             socket.broadcast.emit('positionUpdate', {
                 userId: data.userId,
-                coordinates: data.coordinates
+                coordinates: data.coordinates,
+                rotation: data.rotation 
             });
         }
     });
