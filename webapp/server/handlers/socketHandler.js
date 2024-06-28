@@ -29,12 +29,13 @@ function handleConnection(socket, io) {
         });
     });
 
-    socket.on('coordinates', (data) => {
+    socket.on('position', (data) => {
         if (socket.type === 'game') {
-            console.log(`Coordinates update from game: ${socket.userId}`);
-            socket.broadcast.emit('coordinatesUpdate', {
+            console.log(`Coordinates update from game: ${socket.userId} for ${data.userId}`);
+            socket.broadcast.emit('positionUpdate', {
                 userId: data.userId,
-                coordinates: data.coordinates
+                coordinates: data.coordinates,
+                rotation: data.rotation
             });
         }
     });

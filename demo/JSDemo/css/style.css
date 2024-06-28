@@ -3,6 +3,7 @@ body {
     padding: 0;
     background-color: #f5f5f5;
     font-family: 'Roboto', sans-serif;
+    overflow: hidden;
 }
 
 .prevent-select {
@@ -28,4 +29,5 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    position: absolute;
 }
