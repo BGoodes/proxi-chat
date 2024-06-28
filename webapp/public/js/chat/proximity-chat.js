@@ -1,14 +1,18 @@
 import PeerConnection from './peer-connection.js'
 import AudioManager from './audio-manager.js'
+import Visualizer from './visualizer.js';
 
 class ProximityChat {
     constructor(serverUrl) {
         this.serverUrl = serverUrl;
         this.socket = null;
+        this.userId = null;
         this.localStream = null;
         this.peers = {};
-        this.audioManager = new AudioManager();
-        this.userId = null;
+        
+        this.audioManager = new AudioManager(
+            new Visualizer()
+        );
     }
 
     async initialize(userId, type = 'player') {

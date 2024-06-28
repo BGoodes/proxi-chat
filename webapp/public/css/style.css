@@ -12,34 +12,17 @@ body {
     padding: 20px;
 }
 
-#audioContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+.listener, .panner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
 }
 
-.audio-box {
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 200px;
-    text-align: center;
+.listener {
+    background-color: blue;
 }
 
-.audio-box audio {
-    width: 100%;
-    margin-top: 10px;
-}
-
-.audio-box h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
+.panner {
+    background-color: red;
 }

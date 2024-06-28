@@ -1,7 +1,8 @@
 class AudioManager {
-    constructor() {
+    constructor(visualizer) {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.panners = {};
+        this.visualizer = visualizer;
     }
 
     setListenerPosition(x, y, z) {
@@ -25,12 +26,16 @@ class AudioManager {
         panner.connect(this.audioContext.destination);
 
         this.panners[userId] = panner;
+
+        this.visualizer.addElement(`panner-${userId}`, 'panner');
     }
 
     removeAudioElement(userId) {
         if (this.panners[userId]) {
             this.panners[userId].disconnect();
             delete this.panners[userId];
+
+            this.visualizer.removeElement(`panner-${userId}`);
         }
     }
 
@@ -46,6 +51,8 @@ class AudioManager {
 
         panner.orientationX.setValueAtTime(Math.cos(rotation), this.audioContext.currentTime);
         panner.orientationZ.setValueAtTime(Math.sin(rotation), this.audioContext.currentTime);
+
+        this.visualizer.updateElementPosition(`panner-${userId}`, x, y);
     }
 
     updateListenerPosition(coordinates, rotation) {
@@ -62,6 +69,8 @@ class AudioManager {
             this.audioContext.listener.setPosition(x, y, z);
             this.audioContext.listener.setOrientation(Math.cos(rotation), 0, Math.sin(rotation), 0, 1, 0);
         }
+
+        this.visualizer.updateElementPosition('listener', x, y);
     }
 }
 
