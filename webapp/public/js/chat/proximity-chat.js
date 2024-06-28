@@ -103,10 +103,10 @@ class ProximityChat {
         panner.maxDistance = 50;
         panner.rolloffFactor = 1;
 
-        panner.coneInnerAngle = 90;
-        panner.coneOuterAngle = 180;
-        panner.coneOuterGain = 0.3;
-
+        panner.coneInnerAngle = 360;
+        panner.coneOuterAngle = 0;
+        panner.coneOuterGain = 0;
+        
         source.connect(panner);
         panner.connect(this.audioContext.destination);
 
@@ -118,8 +118,8 @@ class ProximityChat {
         delete this.panners[userId];
     }
 
-    updatePannerPosition(userId, coordinates, rotation) {
-        console.log('Update panner position', userId, coordinates, rotation);
+    updatePannerPosition(userId, coordinates) {
+        console.log('Update panner position', userId, coordinates);
         const panner = this.panners[userId];
         const {x, y, z} = coordinates;
         if (!panner) return;
@@ -127,24 +127,17 @@ class ProximityChat {
         panner.positionX.setValueAtTime(x, this.audioContext.currentTime);
         panner.positionY.setValueAtTime(y, this.audioContext.currentTime);
         panner.positionZ.setValueAtTime(z, this.audioContext.currentTime);
-
-        panner.orientationX.setValueAtTime(Math.cos(rotation), this.audioContext.currentTime);
-        panner.orientationZ.setValueAtTime(Math.sin(rotation), this.audioContext.currentTime);
     }
 
-    updateListenerPosition(coordinates, rotation) {
-        console.log('Update listener position', coordinates, rotation);
+    updateListenerPosition(coordinates) {
+        console.log('Update listener position', coordinates);
         const {x, y, z} = coordinates;
         if (this.audioContext.listener.positionX) {
             this.audioContext.listener.positionX.setValueAtTime(x, this.audioContext.currentTime);
             this.audioContext.listener.positionY.setValueAtTime(y, this.audioContext.currentTime);
             this.audioContext.listener.positionZ.setValueAtTime(z, this.audioContext.currentTime);
-
-            this.audioContext.listener.forwardX.setValueAtTime(Math.cos(rotation), this.audioContext.currentTime);
-            this.audioContext.listener.forwardZ.setValueAtTime(Math.sin(rotation), this.audioContext.currentTime);
         } else {
             this.audioContext.listener.setPosition(x, y, z);
-            this.audioContext.listener.setOrientation(Math.cos(rotation), 0, Math.sin(rotation), 0, 1, 0);
         }
     }
 }
