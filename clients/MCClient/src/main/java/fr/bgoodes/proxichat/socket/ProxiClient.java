@@ -40,7 +40,9 @@ public class ProxiClient {
 
             data.put("coordinates", coordinates);
 
-            socket.emit("coordinates", data);
+            data.put("rotation", Math.toRadians(location.getYaw() + 90));
+
+            socket.emit("position", data);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
