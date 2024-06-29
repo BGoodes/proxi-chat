@@ -5,7 +5,6 @@
             this.updateCenter();
 
             this.updateElementPosition('listener', 0, 0);
-            console.log('Visualizer initialized', this.centerX, this.centerY);
         }
 
         updateCenter() {
@@ -47,7 +46,7 @@
         updateElementRotation(id, rotation) {
             const element = document.getElementById(id);
             if (element) {
-                const angle = rotation * (180 / Math.PI);
+                const angle = rotation * (180 / Math.PI) + 90;
                 element.style.transform = `rotateZ(${angle}deg)`;
             }
         }
