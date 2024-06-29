@@ -17,6 +17,11 @@
             const element = document.createElement('div');
             element.className = className;
             element.id = id;
+                        
+            const indicator = document.createElement('div');
+            indicator.className = 'direction';
+            element.appendChild(indicator);
+
             this.container.appendChild(element);
             this.updateElementPosition(id, 0, 0);
         }
@@ -36,6 +41,14 @@
                 
                 element.style.left = `${this.centerX - elementWidth / 2 + offsetX}px`;
                 element.style.top = `${this.centerY - elementHeight / 2 + offsetY}px`;
+            }
+        }
+        
+        updateElementRotation(id, rotation) {
+            const element = document.getElementById(id);
+            if (element) {
+                const angle = rotation * (180 / Math.PI);
+                element.style.transform = `rotateZ(${angle}deg)`;
             }
         }
     }

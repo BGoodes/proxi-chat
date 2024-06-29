@@ -27,7 +27,7 @@ class AudioManager {
 
         this.panners[userId] = panner;
 
-        this.visualizer.addElement(`panner-${userId}`);
+        this.visualizer.addElement(`panner-${userId}`, 'panner');
     }
 
     removeAudioElement(userId) {
@@ -35,7 +35,7 @@ class AudioManager {
             this.panners[userId].disconnect();
             delete this.panners[userId];
 
-            this.visualizer.removeElement(`panner-${userId}`);
+            this.visualizer.removeElement(`panner-${userId}`, 'panner');
         }
     }
 
@@ -53,6 +53,7 @@ class AudioManager {
         panner.orientationZ.setValueAtTime(Math.sin(rotation), this.audioContext.currentTime);
 
         this.visualizer.updateElementPosition(`panner-${userId}`, x, y);
+        this.visualizer.updateElementRotation(`panner-${userId}`, rotation);
     }
 
     updateListenerPosition(coordinates, rotation) {
@@ -71,6 +72,7 @@ class AudioManager {
         }
 
         this.visualizer.updateElementPosition('listener', x, y);
+        this.visualizer.updateElementRotation('listener', rotation);
     }
 }
 
