@@ -1,12 +1,13 @@
 import Joi from "joi";
 
-const Coordinates = Joi.object({
+const Position = Joi.object({
     userId: Joi.string().required(),
     coordinates: Joi.object({
         x: Joi.number().required(),
         y: Joi.number().required(),
         z: Joi.number().required()
-    }).required()
+    }).required(),
+    rotation: Joi.number().required()
 });
 
-export default Coordinates;
+export default Position;

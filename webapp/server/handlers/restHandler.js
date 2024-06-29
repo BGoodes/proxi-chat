@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import Coordinates from "../models/Coordinates.js";
+import Position from "../models/Position.js";
 
 const setupRestRoutes = (io) => {
 
     const router = Router();
-    router.post('/update-coordinates', async (req, res) => {
-        const {error, value} = Coordinates.validate(req.body);
+    router.post('/update-position', async (req, res) => {
+        const {error, value} = Position.validate(req.body);
         if (error) {
             return res.status(400).send({error: error.details[0].message});
         }
-        const {userId, coordinates} = value;
-        console.log(`Coordinates update from REST: ${userId} - ${coordinates}`);
-        io.emit('coordinatesUpdate', {userId, coordinates});
-        res.send({status: 'Coordinates updated from REST'});
+        const {userId, coordinates, rotation} = value;
+        console.log(`Position update from REST: ${userId} - ${coordinates} / ${rotation}`);
+        io.emit('positionUpdate', {userId, coordinates, rotation});
+        res.send({status: 'Position updated from REST'});
     });
 
     return router;
