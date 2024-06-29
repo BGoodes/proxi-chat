@@ -27,7 +27,7 @@ class AudioManager {
 
         this.panners[userId] = panner;
 
-        this.visualizer.addElement(`panner-${userId}`, 'panner');
+        this.visualizer.addElement(`panner-${userId}`);
     }
 
     removeAudioElement(userId) {
