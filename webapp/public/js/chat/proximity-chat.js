@@ -67,9 +67,15 @@ class ProximityChat {
 
     createPeerConnection(userId, peerId, initiator) {
         const peer = new PeerConnection(userId, peerId, initiator, this.localStream, this.socket);
+
+        // callbacks
         peer.on('stream', (stream) => {
             this.audioManager.addAudioElement(userId, stream);
         });
+        peer.on('close', () => {
+            this.audioManager.removeAudioElement(userId);
+        });
+
         this.peers[peerId] = peer;
     }
 }
