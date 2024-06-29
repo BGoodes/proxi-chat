@@ -20,15 +20,16 @@ public class ProxiChatClient
         await _socket.DisconnectAsync();
     }
 
-    public async Task SendCoordinatesAsync(String userId, int x, int y, int z)
+    public async Task SendCoordinatesAsync(String userId, int x, int y, int z, float rotation)
     {
         var data = new
         {
             userId,
-            coordinates = new { x = x, y = y, z = z}
+            coordinates = new { x = x, y = y, z = z},
+            rotation
         };
 
-        await _socket.EmitAsync("coordinates", data);
-        Console.WriteLine($"Coordinates sent: {data.userId}, {string.Join(", ", data.coordinates)}");
+        await _socket.EmitAsync("position", data);
+        Console.WriteLine($"Position sent: {data.userId}, {string.Join(", ", data.coordinates, ", ", data.rotation)}");
     }
 }

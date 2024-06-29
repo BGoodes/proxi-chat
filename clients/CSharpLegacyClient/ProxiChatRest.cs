@@ -11,13 +11,13 @@ namespace CSharpLegacyClient
             _url = string.Concat(url, "/api/v1/update-coordinates");
         }
 
-        public void UpdateCoordinates(string userId, int x, int y, int z)
+        public void UpdateCoordinates(string userId, int x, int y, int z, float rotation)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_url);
             request.Method = "POST";
             request.ContentType = "application/json";
 
-            string body = $"{{\"userId\": \"{userId}\", \"coordinates\": {{\"x\": {x}, \"y\": {y}, \"z\": {z}}}}}";
+            string body = $"{{\"userId\": \"{userId}\", \"coordinates\": {{\"x\": {x}, \"y\": {y}, \"z\": {z}}}, \"rotation\": {rotation}}";
             byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(body);
             request.ContentLength = bodyBytes.Length;
 
