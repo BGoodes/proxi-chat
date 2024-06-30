@@ -8,16 +8,16 @@ namespace CSharpLegacyClient
 
         public ProxiChatRest(string url)
         {
-            _url = string.Concat(url, "/api/v1/update-coordinates");
+            _url = string.Concat(url, "/api/v1/update-position");
         }
 
-        public void UpdateCoordinates(string userId, int x, int y, int z, float rotation)
+        public void UpdatePosition(string userId, int x, int y, int z, float rotation)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_url);
             request.Method = "POST";
             request.ContentType = "application/json";
 
-            string body = $"{{\"userId\": \"{userId}\", \"coordinates\": {{\"x\": {x}, \"y\": {y}, \"z\": {z}}}, \"rotation\": {rotation}}";
+            string body = $"{{\"userId\": \"{userId}\", \"coordinates\": {{\"x\": {x}, \"y\": {y}, \"z\": {z}}}, \"rotation\": {rotation}}}";
             byte[] bodyBytes = System.Text.Encoding.UTF8.GetBytes(body);
             request.ContentLength = bodyBytes.Length;
 
