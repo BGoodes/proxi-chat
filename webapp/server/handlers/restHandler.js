@@ -10,7 +10,7 @@ const setupRestRoutes = (io) => {
             return res.status(400).send({error: error.details[0].message});
         }
         const {userId, coordinates, rotation} = value;
-        console.log(`Position update from REST: ${userId} - ${coordinates} / ${rotation}`);
+        console.log(`Position update from REST: ${userId} - (${coordinates.x}, ${coordinates.y}, ${coordinates.z}) / ${rotation}`);
         io.emit('positionUpdate', {userId, coordinates, rotation});
         res.send({status: 'Position updated from REST'});
     });
