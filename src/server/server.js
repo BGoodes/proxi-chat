@@ -6,7 +6,7 @@ import sirv from "sirv";
 import handleConnection from "./handlers/socketHandler.js";
 import setupRestRoutes from "./handlers/restHandler.js";
 
-const PORT = 3000;
+const PORT = 1505;
 
 const app = express();
 const server = createServer(app);
