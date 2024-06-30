@@ -29,5 +29,5 @@ app.use('/api/v1', setupRestRoutes(io));
 // Static files
 app.use(sirv('public'));
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on the port ${PORT}`);
 })

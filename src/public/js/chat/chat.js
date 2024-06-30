@@ -1,4 +1,5 @@
 import ProximityChat from './proximity-chat.js';
+import { SOCKET_URL } from '../config.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const pseudo = localStorage.getItem('pseudo');
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const initializeChat = () => {
         console.log('Initializing chat...');
-        const chat = new ProximityChat('http://localhost:3000');
+        const chat = new ProximityChat(SOCKET_URL);
         chat.initialize(pseudo);
     };
 
