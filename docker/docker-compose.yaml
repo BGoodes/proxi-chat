@@ -1,0 +1,12 @@
+version: '3.8'
+name: proxichat
+
+services:
+  proxichat:
+    image: bgoodes/proxichat:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: proxichat
+    ports:
+      - "3000:3000"
