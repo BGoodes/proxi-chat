@@ -1,21 +1,34 @@
-import { createServer } from "http";
+import { createServer } from "https";
 import express from "express";
 import { Server } from "socket.io";
 import sirv from "sirv";
+import { readFileSync } from "fs";
+
+import dotenv from "dotenv";
+dotenv.config({ silent: true })
 
 import handleConnection from "./handlers/socketHandler.js";
 import setupRestRoutes from "./handlers/restHandler.js";
 
-const PORT = 3000;
+const PORT = process.env.EXPRESS_PORT || 3000;
+
+const SSL_KEY_PATH = process.env.SSL_KEY_PATH;
+const SSL_CERT_PATH = process.env.SSL_CERT_PATH;
+
+const options = { 
+    key: readFileSync(SSL_KEY_PATH),
+    cert: readFileSync(SSL_CERT_PATH),
+    passphrase: process.env.SSL_PASSPHRASE
+};
 
 const app = express();
-const server = createServer(app);
+const server = createServer(options, app);
 const io = new Server(server, {
      cors: { 
         origin: '*',
         methods: ['GET', 'POST']
     } 
-})
+});
 
 // Socket.io
 io.on("connection", (socket) => {

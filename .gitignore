@@ -18,5 +18,13 @@
 # VS Code
 .vscode/
 
+# Environment variables
+.env
+
+# Certificate files
+certs
+*.pem
+*.cer
+
 # OS
 .DS_Store
