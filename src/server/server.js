@@ -12,13 +12,17 @@ import setupRestRoutes from "./handlers/restHandler.js";
 
 const PORT = process.env.EXPRESS_PORT || 3000;
 
+// SSL
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH;
 const SSL_CERT_PATH = process.env.SSL_CERT_PATH;
+const SSL_PASSPHRASE = process.env.SSL_PASSPHRASE || "";
+const SSL_CA = process.env.SSL_CA || "";
 
 const options = { 
     key: readFileSync(SSL_KEY_PATH),
     cert: readFileSync(SSL_CERT_PATH),
-    passphrase: process.env.SSL_PASSPHRASE
+    passphrase: SSL_PASSPHRASE,
+    ca: SSL_CA
 };
 
 const app = express();
