@@ -1,5 +1,5 @@
 version: '3.8'
-name: proxichat
+name: ${CONTAINER_NAME}
 
 services:
   proxichat:
@@ -7,8 +7,12 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: proxichat
+    container_name: ${CONTAINER_NAME}
     ports:
-      - "3000:3000"
-    env_file:
-      - .env
+      - "${CONTAINER_PORT}:${EXPRESS_PORT}"
+    environment:
+      - EXPRESS_PORT=${EXPRESS_PORT}
+      - SSL_CERT_PATH=${SSL_CERT_PATH}
+      - SSL_KEY_PATH=${SSL_KEY_PATH}
+      - SSL_CA_PATH=${SSL_CA_PATH}
+      - SSL_PASSPHRASE=${SSL_PASSPHRASE}
