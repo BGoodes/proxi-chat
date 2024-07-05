@@ -10,6 +10,11 @@ services:
     container_name: ${CONTAINER_NAME}
     ports:
       - "${CONTAINER_PORT}:${EXPRESS_PORT}"
-    env_file:
-      - .env
-    
+    volumes:
+      - ${SSL_CERT_PATH:-../certs/fullchain.pem}:/etc/ssl/certs/fullchain.pem
+      - ${SSL_KEY_PATH:-../certs/privkey.pem}:/etc/ssl/certs/privkey.pem
+    environment:
+      - EXPRESS_PORT=${EXPRESS_PORT}
+      - SSL_CERT_PATH=/etc/ssl/certs/fullchain.pem
+      - SSL_KEY_PATH=/etc/ssl/certs/privkey.pem
+      - SSL_PASSPHRASE=${SSL_PASSPHRASE}

@@ -15,13 +15,11 @@ const PORT = process.env.EXPRESS_PORT || 3000;
 // SSL
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH;
 const SSL_CERT_PATH = process.env.SSL_CERT_PATH;
-const SSL_CA_PATH = process.env.SSL_CA_PATH;
 const SSL_PASSPHRASE = process.env.SSL_PASSPHRASE;
 
 const options = { 
     key: SSL_KEY_PATH && readFileSync(SSL_KEY_PATH) || undefined,
     cert: SSL_CERT_PATH && readFileSync(SSL_CERT_PATH) || undefined,
-    ca: SSL_CA_PATH && readFileSync(SSL_CA_PATH) || undefined,
     passphrase: SSL_PASSPHRASE
 };
 
