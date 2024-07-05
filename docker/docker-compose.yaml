@@ -10,9 +10,6 @@ services:
     container_name: ${CONTAINER_NAME}
     ports:
       - "${CONTAINER_PORT}:${EXPRESS_PORT}"
-    environment:
-      - EXPRESS_PORT=${EXPRESS_PORT}
-      - SSL_CERT_PATH=${SSL_CERT_PATH}
-      - SSL_KEY_PATH=${SSL_KEY_PATH}
-      - SSL_CA_PATH=${SSL_CA_PATH}
-      - SSL_PASSPHRASE=${SSL_PASSPHRASE}
+    env_file:
+      - .env
+    
