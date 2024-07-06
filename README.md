@@ -54,5 +54,9 @@ TODO documentation...
 2. Go to the docker folder and create a .env file, you can copy .env.example.
 3. Then start the service: `docker compose up`
 
+## Contributing
+
+Contributions are welcome! Please fork the repository and create a pull request with your changes.
+
 ## License
 This project is licensed under the MIT License. See the [LICENCE](LICENCE.txt) file for details.
