@@ -1,0 +1,5 @@
+name: ProxiChatPlugin
+version: '1.0-SNAPSHOT'
+main: fr.hactazia.proxichat.proxichat.ProxiChatPlugin
+api-version: '1.21'
+authors: [ Hactazia ]

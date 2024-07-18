@@ -70,6 +70,3 @@ This is just the beginning of the project, and it's more of a proof of concept a
  * Move backend from node and express to bun and Hono.
  * Init a Vite TS project
  * ...
-
-## License
-This project is licensed under the MIT License. See the [LICENCE](LICENCE.txt) file for details.
