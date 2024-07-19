@@ -20,13 +20,25 @@
       <div class="userlist p-1">
         <ul id="playerlist">
           <li id="playertemplate" class="user">
-            <div class="usericon">
-              <img class="avatar" src="https://s.namemc.com/2d/skin/face.png?id=28804bc80043e6ba&scale=4">
-              <div class="username">
-                <h4 class="display">Username</h4>
+            <div class="user-info">
+              <div class="usericon">
+                <img class="avatar" src="https://s.namemc.com/2d/skin/face.png?id=28804bc80043e6ba&scale=4">
+                <div class="username">
+                  <h4 class="display">Username</h4>
+                </div>
               </div>
+              <div class="status"></div>
             </div>
-            <div class="status"> </div>
+            <div class="user-options">
+              <audio class="user-audio"></audio>
+              <div class="user-volume">
+                <input type="range" class="volume-range" min="0" max="100" value="100">
+                <button class="mute mute-audio">
+                  <img width="98" height="98" src="https://img.icons8.com/fluency-systems-filled/98/000000/no-audio.png" class="icon">
+                </button>
+              </div>
+              <canvas class="visualizer w-100 hide"></canvas>
+            </div>
           </li>
         </ul>
       </div>
@@ -34,6 +46,7 @@
         <select id="sessionlist" class="btn w-100">
           <option value="">(Déconnecté) Sélectionner une session</option>
         </select>
+        <audio id="localaudio" class="w-100" autoplay controls></audio>
       </div>
     </div>
     <div class="logs">

@@ -3,10 +3,12 @@ package fr.hactazia.proxichat.proxichat;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class EventSender {
     public ProxiChatPlugin main;
@@ -28,14 +30,8 @@ public class EventSender {
         var json = new JsonObject();
         json.addProperty("type", "channels");
         json.addProperty("id", player.getUniqueId().toString());
-        var fc = new JsonArray();
-        fc.add(player.getWorld().getName());
-        var sc = new JsonArray();
-        for (var channel : GetBestChannels(gameMode))
-            sc.add(channel);
         var channels = new JsonArray();
-        channels.add(fc);
-        channels.add(sc);
+        channels.add(Objects.requireNonNull(player.getPlayer()).getWorld().getName() + "_" + gameMode.toString());
         json.add("channels", channels);
         main.udpHandler.send(json);
     }
@@ -49,27 +45,43 @@ public class EventSender {
         json.addProperty("min_distance", main.minDistance);
         json.addProperty("max_distance", main.maxDistance);
         json.addProperty("token", token);
-        main.udpHandler.send(json);
-    }
 
-    public ArrayList<String> GetBestChannels(GameMode gameMode) {
-        var channels = new ArrayList<String>();
-        switch (gameMode) {
-            case SURVIVAL, ADVENTURE:
-                channels.add("survival");
-                channels.add("adventure");
-                channels.add("creative");
-                break;
-            case CREATIVE, SPECTATOR:
-                channels.add("survival");
-                channels.add("adventure");
-                channels.add("creative");
-                channels.add("spectator");
-                break;
-            default:
-                break;
+        var obj = new JsonObject();
+        for (World world : main.getServer().getWorlds()) {
+            var lc = new JsonArray();
+            var ls = new JsonArray();
+            var lp = new JsonArray();
+            var la = new JsonArray();
+
+            // creative send to creative, survival, spectator and adventure
+            lc.add(world.getName() + "_" + GameMode.CREATIVE);
+            lc.add(world.getName() + "_" + GameMode.SURVIVAL);
+            lc.add(world.getName() + "_" + GameMode.SPECTATOR);
+            lc.add(world.getName() + "_" + GameMode.ADVENTURE);
+
+            // survival send to survival, creative, spectator and adventure
+            ls.add(world.getName() + "_" + GameMode.SURVIVAL);
+            ls.add(world.getName() + "_" + GameMode.CREATIVE);
+            ls.add(world.getName() + "_" + GameMode.ADVENTURE);
+            ls.add(world.getName() + "_" + GameMode.SPECTATOR);
+
+            // spectator send to spectator, survival, creative and adventure
+            lp.add(world.getName() + "_" + GameMode.SPECTATOR);
+            lp.add(world.getName() + "_" + GameMode.CREATIVE);
+
+            // adventure send to adventure, survival, spectator and creative
+            la.add(world.getName() + "_" + GameMode.ADVENTURE);
+            la.add(world.getName() + "_" + GameMode.SURVIVAL);
+            la.add(world.getName() + "_" + GameMode.CREATIVE);
+            la.add(world.getName() + "_" + GameMode.SPECTATOR);
+
+            obj.add(world.getName() + "_" + GameMode.CREATIVE, lc);
+            obj.add(world.getName() + "_" + GameMode.SURVIVAL, ls);
+            obj.add(world.getName() + "_" + GameMode.SPECTATOR, lp);
+            obj.add(world.getName() + "_" + GameMode.ADVENTURE, la);
         }
-        return channels;
+        json.add("relations", obj);
+        main.udpHandler.send(json);
     }
 
 

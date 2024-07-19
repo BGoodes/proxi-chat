@@ -4,6 +4,11 @@ import { getPreferedURL, NetPlayer, NetServer } from "./NetHandler";
 import { JwtPayload } from "../security/JwtManager";
 import { randomBytes } from "crypto";
 
+function toFixedNumber(num: number, digits: number) {
+    const multiplier = Math.pow(10, digits);
+    return Math.round(num * multiplier) / multiplier;
+}
+
 interface ConPlayer {
     _id: string;
     player_id: string;
@@ -30,6 +35,21 @@ interface ConChatter {
 }
 
 
+interface ConRelation {
+    _id: string;
+    a_player: {
+        player_id: string;
+        can_send: boolean;
+    }
+    b_player: {
+        player_id: string;
+        can_send: boolean;
+    },
+    distance: number;
+    server_id: string;
+    type: string;
+}
+
 export default class ConnectorHandler {
     constructor(private readonly main: Main) { }
 
@@ -38,6 +58,8 @@ export default class ConnectorHandler {
         this.main.on('user_leave', this.onUserLeave.bind(this));
         this.main.on('player_join', this.onPlayerJoin.bind(this));
         this.main.on('player_leave', this.onPlayerLeave.bind(this));
+        this.main.on('player_move', this.onPlayerMove.bind(this));
+        this.main.on('player_channels', this.onPlayerChannels.bind(this));
         this.main.on('server_create', this.onServerCreate.bind(this));
         this.main.on('server_delete', this.onServerDelete.bind(this));
         this.main.on('server_update', this.onServerUpdate.bind(this));
@@ -46,6 +68,7 @@ export default class ConnectorHandler {
 
     users: Map<string, ConUser> = new Map();
     players: Map<string, ConPlayer> = new Map();
+    playersRelations: Map<string, ConRelation> = new Map();
     get servers() { return this.main.nethandler.servers; }
     chatters: Map<string, ConChatter> = new Map();
 
@@ -57,9 +80,72 @@ export default class ConnectorHandler {
             case 'disconnect_session':
                 this.onChatterLeave(socket.id, data);
                 break;
+            case 'player_offer':
+                this.onChatterOffer(socket.id, data);
+                break;
+            case 'player_answer':
+                this.onChatterAnswer(socket.id, data);
+                break;
+            case 'player_ice':
+                this.onChatterIce(socket.id, data);
+                break;
             default:
                 console.log('Unknown event', event);
         }
+    }
+
+    onChatterOffer(socket_id: string, data: { offer: any, type: string, player_id: string, session_id: string, voice_id: string }) {
+        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
+
+        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
+        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
+        if (!by_chatter || !to_chatter) return console.log('6 Chatter not found', !by_chatter, !to_chatter);
+        // console.log(`[PChat] Chatter offer by ${by_chatter.player_id} for ${to_chatter.player_id}`);
+
+        this.sendToSocket(to_chatter.socket_id, 'player_offer', {
+            offer: data.offer,
+            player_id: by_chatter.player_id,
+            session_id: by_chatter.server_id,
+            type: by_chatter.type,
+            voice_id: data.voice_id
+        });
+    }
+
+    onChatterAnswer(socket_id: string, data: { answer: any, type: string, player_id: string, session_id: string, voice_id: string }) {
+        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
+        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
+        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
+        if (!by_chatter || !to_chatter) return console.log('7 Chatter not found', !by_chatter, !to_chatter);
+        // console.log(`[PChat] Chatter answer by ${by_chatter.player_id} for ${to_chatter.player_id}`);
+
+        this.sendToSocket(to_chatter.socket_id, 'player_answer', {
+            answer: data.answer,
+            player_id: by_chatter.player_id,
+            session_id: by_chatter.server_id,
+            type: by_chatter.type,
+            voice_id: data.voice_id
+        });
+    }
+
+    getChattersByServer(server_id: string, type: string) {
+        return Array.from(this.chatters.values()).filter(c => c.server_id === server_id && c.type === type);
+    }
+
+    onChatterIce(socket_id: string, data: { ice: any, type: string, session_id: string, player_id: string, voice_id: string }) {
+        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
+
+        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
+        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
+        if (!by_chatter || !to_chatter) return console.log('8 Chatter not found', !by_chatter, !to_chatter);
+        // console.log(`[PChat] Chatter ice by ${by_chatter.player_id} for ${to_chatter.player_id}`);
+
+        this.sendToSocket(to_chatter.socket_id, 'player_ice', {
+            ice: data.ice,
+            player_id: by_chatter.player_id,
+            session_id: by_chatter.server_id,
+            type: by_chatter.type,
+            voice_id: data.voice_id
+        });
     }
 
     getUser(user_id: string, type: string, player_id: string) {
@@ -119,8 +205,11 @@ export default class ConnectorHandler {
         let player = this.getPlayer(data.player_id, data.type, data.session_id);
         let user = this.getUserWithSocket(socket_id, data.type, data.player_id);
         let server = this.getServer(data.session_id, data.type);
-        if (!player || !user || !server || chatter)
-            return console.log('3 Player, user or server not found', !player, !user, !server, !!chatter);
+        if (!player || !user || !server)
+            return console.log('3 Player, user or server not found', !player, !user, !server);
+        if (chatter)
+            this.onChatterLeave(chatter.socket_id, { player_id: chatter.player_id, type: chatter.type, server_id: chatter.server_id, user_id: chatter.server_id });
+
         console.log('[PChat] Chatter join', socket_id, data.player_id, data.type, data.session_id);
 
         let _id = randomBytes(16).toString('hex');
@@ -140,6 +229,8 @@ export default class ConnectorHandler {
             server: {
                 id: server.group,
                 display: server.display,
+                min_distance: server.min_distance,
+                max_distance: server.max_distance
             },
             player: {
                 id: player.player_id,
@@ -153,9 +244,30 @@ export default class ConnectorHandler {
             }))
         });
 
+        for (const otherPlayer of server.players) {
+            if (otherPlayer.id === player.player_id) continue;
+            const otherChatter = this.getChatterByPlayerServer(otherPlayer.id, server.link, server.group);
+            if (otherChatter) {
+                this.sendToSocket(socket_id, 'chatter_joined', {
+                    player_id: otherPlayer.id,
+                    session_id: server.group,
+                    type: server.link
+                });
+                this.sendToSocket(otherChatter.socket_id, 'chatter_joined', {
+                    player_id: player.player_id,
+                    session_id: server.group,
+                    type: server.link
+                });
+            }
+        }
+
         this.sendToServer(server.address, server.port, 'chatter_connect', {
             id: data.player_id
         });
+
+
+        let netplayer = server.players.find(p => p.id === player.player_id);
+        if (netplayer) this.onPlayerChannels(server, netplayer);
     }
 
     onChatterLeave(socket_id: string, data?: { player_id: string, type: string, user_id: string, server_id: string }) {
@@ -164,8 +276,7 @@ export default class ConnectorHandler {
             chatter = Array.from(this.chatters.values()).find(c => c.socket_id === socket_id);
             if (!chatter) return console.log('4 Chatter not found');
             data = { player_id: chatter.player_id, type: chatter.type, server_id: chatter.server_id, user_id: chatter.server_id };
-        } else 
-        {
+        } else {
             console.log('Data', data);
             chatter = this.getChatter(data.player_id, data.server_id, data.type);
         }
@@ -194,6 +305,23 @@ export default class ConnectorHandler {
                 avatar: player.avatar
             }
         });
+
+        for (const otherPlayer of server.players) {
+            if (otherPlayer.id === player.player_id) continue;
+            const otherChatter = this.getChatterByPlayerServer(otherPlayer.id, server.link, server.group);
+            if (otherChatter) {
+                this.sendToSocket(socket_id, 'chatter_left', {
+                    player_id: otherPlayer.id,
+                    session_id: server.group,
+                    type: server.link
+                });
+                this.sendToSocket(otherChatter.socket_id, 'chatter_left', {
+                    player_id: player.player_id,
+                    session_id: server.group,
+                    type: server.link
+                });
+            }
+        }
 
         this.sendToServer(server.address, server.port, 'chatter_disconnect', {
             id: data.player_id
@@ -286,10 +414,12 @@ export default class ConnectorHandler {
                 player_id: player.id,
                 display: player.name,
                 avatar: player.avatar,
-                server_id: server.group,
+                session_id: server.group,
                 type: server.link
             });
         }
+
+        this.onPlayerMove(server, player);
     }
 
     onUserLeave(socket_id: string, user_id: string, type: string, player_id: string) {
@@ -360,9 +490,12 @@ export default class ConnectorHandler {
             const chatter = this.getChatterByPlayerServer(otherPlayer.id, server.link, server.group);
             if (chatter) this.sendToSocket(chatter.socket_id, 'player_leave', {
                 player_id: player.id,
-                server_id: server.group,
+                session_id: server.group,
                 type: server.link
             });
+
+            let relation = this.getPlayerRelation(player, otherPlayer, server);
+            if (relation) this.playersRelations.delete(relation._id);
         }
     }
 
@@ -380,5 +513,146 @@ export default class ConnectorHandler {
 
     getTempLink(link_id: string, type: string) {
         return Array.from(this.main.linkhandler.tempLinks.values()).find(l => l.data.id === link_id && l.data.type === type);
+    }
+
+    getPlayerRelation(a_player: NetPlayer, b_player: NetPlayer, server: NetServer) {
+        return Array.from(this.playersRelations.values())
+            .find(r => r.server_id === server.group && r.type === server.link
+                && (r.a_player.player_id === a_player.id || r.a_player.player_id === b_player.id)
+                && (r.b_player.player_id === a_player.id || r.b_player.player_id === b_player.id));
+    }
+
+    makePlayerRelation(a_player: NetPlayer, b_player: NetPlayer, server: NetServer): ConRelation {
+        let relation = this.getPlayerRelation(a_player, b_player, server);
+        if (relation) return relation;
+        let _id = randomBytes(16).toString('hex');
+        this.playersRelations.set(_id, {
+            _id: _id,
+            a_player: {
+                player_id: a_player.id,
+                can_send: false
+            },
+            b_player: {
+                player_id: b_player.id,
+                can_send: false
+            },
+            distance: 0,
+            server_id: server.group,
+            type: server.link
+        });
+        return this.playersRelations.get(_id) as ConRelation;
+    }
+
+    onPlayerMove(server: NetServer, a_player: NetPlayer) {
+        for (let b_player of server.players) {
+            if (a_player.id === b_player.id) continue;
+            let a_can_send_to_b = this.canSendPlayerToPlayer(a_player, b_player, server);
+            let b_can_send_to_a = this.canSendPlayerToPlayer(b_player, a_player, server);
+            let relation = this.getPlayerRelation(a_player, b_player, server) || this.makePlayerRelation(a_player, b_player, server);
+            let a_relation = relation.a_player.player_id === a_player.id ? relation.a_player : relation.b_player;
+            let b_relation = relation.a_player.player_id === b_player.id ? relation.a_player : relation.b_player;
+            relation.distance = Math.sqrt((a_player.position.x - b_player.position.x) ** 2
+                + (a_player.position.y - b_player.position.y) ** 2
+                + (a_player.position.z - b_player.position.z) ** 2);
+            let a_chatter = this.getChatterByPlayerServer(a_player.id, server.link, server.group);
+            let b_chatter = this.getChatterByPlayerServer(b_player.id, server.link, server.group);
+            if (!a_chatter || !b_chatter) {
+                a_can_send_to_b = false;
+                b_can_send_to_a = false;
+            }
+
+            var calculted_distance = toFixedNumber(Math.max(Math.min(relation.distance, server.max_distance), server.min_distance), 2);
+
+            console.log('Relation', !!relation, a_can_send_to_b, b_can_send_to_a, relation.distance, !!a_chatter, !!b_chatter);
+
+            // signal a can send to b
+            console.log('atob Can send', a_can_send_to_b, !a_relation.can_send, !!a_chatter);
+            if (a_can_send_to_b && !a_relation.can_send && a_chatter) {
+                a_relation.can_send = true;
+                console.log('Active voice', a_player.id, b_player.id, server.group, relation.distance, server.link);
+                this.sendToSocket(a_chatter.socket_id, 'player_distance', {
+                    player_id: b_player.id,
+                    session_id: server.group,
+                    distance: server.max_distance,
+                    type: server.link
+                });
+            }
+
+            // signal a can't send to b
+            if (!a_can_send_to_b && a_relation.can_send && a_chatter) {
+                a_relation.can_send = false;
+                console.log('Inactive voice', a_player.id, b_player.id, server.group, relation.distance, server.link);
+                this.sendToSocket(a_chatter.socket_id, 'player_distance', {
+                    player_id: b_player.id,
+                    session_id: server.group,
+                    distance: server.max_distance,
+                    type: server.link
+                });
+            }
+
+            // signal b can send to a
+            console.log('btoa Can send', b_can_send_to_a, !b_relation.can_send, !!b_chatter);
+            if (b_can_send_to_a && !b_relation.can_send && b_chatter) {
+                b_relation.can_send = true;
+                console.log('Active voice', b_player.id, a_player.id, server.group, relation.distance, server.link);
+                this.sendToSocket(b_chatter.socket_id, 'player_distance', {
+                    player_id: a_player.id,
+                    session_id: server.group,
+                    distance: server.max_distance,
+                    type: server.link
+                });
+            }
+
+            // signal b can't send to a
+            if (!b_can_send_to_a && b_relation.can_send && b_chatter) {
+                b_relation.can_send = false;
+                console.log('Inactive voice', b_player.id, a_player.id, server.group, relation.distance, server.link);
+                this.sendToSocket(b_chatter.socket_id, 'player_distance', {
+                    player_id: a_player.id,
+                    session_id: server.group,
+                    distance: server.max_distance,
+                    type: server.link
+                });
+            }
+
+            // signal distance change
+            if (a_relation.can_send && a_chatter)
+                this.sendToSocket(a_chatter.socket_id, 'player_distance', {
+                    player_id: b_player.id,
+                    session_id: server.group,
+                    distance: calculted_distance,
+                    type: server.link
+                });
+
+            // signal distance change
+            if (b_relation.can_send && b_chatter)
+                this.sendToSocket(b_chatter.socket_id, 'player_distance', {
+                    player_id: a_player.id,
+                    session_id: server.group,
+                    distance: calculted_distance,
+                    type: server.link
+                });
+        }
+    }
+
+    onPlayerChannels(server: NetServer, player: NetPlayer) {
+        console.log('Player channels', player);
+        this.onPlayerMove(server, player);
+    }
+
+    canSendPlayerToPlayer(from: NetPlayer, to: NetPlayer, server: NetServer) {
+        if (!from.position || !to.position) return false;
+        let distance = Math.sqrt((from.position.x - to.position.x) ** 2
+            + (from.position.y - to.position.y) ** 2
+            + (from.position.z - to.position.z) ** 2);
+        if (distance > server.max_distance) return false;
+        let channel_relations = server.relations;
+        for (let channel of from.channels) {
+            let relation = channel_relations[channel];
+            if (!relation) continue;
+            if (to.channels.filter(c => relation?.includes(c)).length)
+                return true;
+        }
+        return false;
     }
 }

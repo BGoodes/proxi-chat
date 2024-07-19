@@ -11,13 +11,19 @@ export interface NetServer {
     content: JwtPayload;
     players: NetPlayer[];
     updated_at: Date;
+    min_distance: number;
+    max_distance: number;
+    relations: {
+        [key: string]: string[]
+    }
 }
 
 export interface NetPlayer {
     id: string;
     name: string;
     avatar: string;
-    channels: string[][];
+    channels: string[];
+    position: { x: number, y: number, z: number };
 }
 
 export class NetHandler {
@@ -51,6 +57,7 @@ export class NetHandler {
                 this.onPing(data);
                 break;
             case 'position':
+                this.onMove(data, data.json);
                 break;
             case 'auth':
                 this.onAuth(data, data.json);
@@ -110,6 +117,9 @@ export class NetHandler {
             this.servers[bylink].display = obj.display;
             this.servers[bylink].address = data.address;
             this.servers[bylink].port = data.port;
+            this.servers[bylink].min_distance = obj.min_distance;
+            this.servers[bylink].max_distance = obj.max_distance;
+            this.servers[bylink].relations = obj.relations;
             data.callback({ type: 'auth', success: true });
             this.main.emit('server_update', this.servers[bylink]);
         } else {
@@ -123,6 +133,9 @@ export class NetHandler {
                 this.servers[bylink].players = [];
                 this.servers[bylink].address = data.address;
                 this.servers[bylink].port = data.port;
+                this.servers[bylink].min_distance = obj.min_distance;
+                this.servers[bylink].max_distance = obj.max_distance;
+                this.servers[bylink].relations = obj.relations;
                 data.callback({ type: 'auth', success: true });
                 this.main.emit('server_update', this.servers[byaddress]);
             } else {
@@ -134,7 +147,10 @@ export class NetHandler {
                     link: obj.link,
                     content: content,
                     updated_at: new Date(),
-                    players: []
+                    players: [],
+                    min_distance: obj.min_distance,
+                    max_distance: obj.max_distance,
+                    relations: obj.relations
                 });
                 data.callback({ type: 'auth', success: true });
                 this.main.emit('server_create', this.servers[this.servers.length - 1]);
@@ -152,7 +168,8 @@ export class NetHandler {
             id: obj.id,
             name: obj.name,
             avatar: obj.avatar,
-            channels: []
+            channels: [],
+            position: { x: 0, y: 0, z: 0 }
         };
         server.players.push(player);
         this.main.emit('player_join', server, player);
@@ -175,7 +192,18 @@ export class NetHandler {
         var player = server.players.find(p => p.id === obj.id);
         if (!player) return console.log('Channels: Player not found');
         player.channels = obj.channels;
-        console.log('Player', obj.id, 'updated channels', obj.channels, 'on', server.link + ':' + server.group);
+        console.log('Channels', obj.channels);
+        this.main.emit('player_channels', server, player);
+    }
+
+    onMove(data: NetPacket, obj: any) {
+        if (obj.type !== 'position') return console.log('Position: Invalid type');
+        var server = this.servers.find(s => s.address === data.address && s.port === data.port);
+        if (!server) return console.log('Position: Server not found');
+        var player = server.players.find(p => p.id === obj.id);
+        if (!player) return console.log('Position: Player not found');
+        player.position = { x: obj.x, y: obj.y, z: obj.z };
+        this.main.emit('player_move', server, player);
     }
 
     onMakeConnectorLink(data: NetPacket, obj: any) {
@@ -185,12 +213,6 @@ export class NetHandler {
         var player = server?.players.find(p => p.id === obj.id);
         if (!server || !player) return console.log('Make Connector Link: Server or player not found');
         var link = this.main.linkhandler.makeLink({ type: server.link, id: player.id }, server.content.uid);
-        console.log('Player', player.id, 'created a connector link', link.id, 'on', server.link + ':' + server.group);
-        console.log({
-            type: 'connector_link',
-            id: player.id,
-            url: new URL('/' + link.id, getPreferedURL()).toString()
-        });
         data.callback(Buffer.from(JSON.stringify({
             type: 'connector_link',
             id: player.id,

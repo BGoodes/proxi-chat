@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <select id="select-microphone"></select>
+  <canvas id="visualizer"></canvas>
+  <audio id="audio" controls></audio>
+  <script>
+    const audio = document.getElementById('audio');
+    const visualizer = document.getElementById('visualizer');
+    const selectMicrophone = document.getElementById('select-microphone');
+
+    const canvasCtx = visualizer.getContext('2d');
+    visualizer.width = 800;
+    visualizer.height = 400;
+
+    let audioCtx = null;
+    let analyser = null;
+    let bufferLength = 0;
+    let dataArray = new Uint8Array(bufferLength);
+
+    selectMicrophone.addEventListener('change', async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: {
+            exact: selectMicrophone.value
+          }
+        }
+      });
+      console.log(selectMicrophone.value, stream);
+
+      audio.srcObject = stream;
+      audio.play();
+
+      audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      source.connect(analyser);
+      analyser.fftSize = 2048;
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+    });
+
+
+    function draw() {
+      requestAnimationFrame(draw);
+
+      if (!analyser) {
+        return;
+      }
+
+      const WIDTH = visualizer.width;
+      const HEIGHT = visualizer.height;
+
+      analyser.getByteTimeDomainData(dataArray);
+
+      canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+      canvasCtx.beginPath();
+
+      const sliceWidth = WIDTH * 1.0 / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * HEIGHT / 2;
+
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+      }
+
+      canvasCtx.lineTo(visualizer.width, visualizer.height / 2);
+      canvasCtx.stroke();
+
+    }
+
+    draw();
+
+    navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        devices.forEach(device => {
+          if (device.kind === 'audioinput') {
+            const option = document.createElement('option');
+            console.log(device);
+            option.text = device.label || `Microphone ${selectMicrophone.length + 1}`;
+            option.value = device.deviceId;
+            selectMicrophone.appendChild(option);
+          }
+        });
+      });
+  </script>
+</body>
+
+</html>

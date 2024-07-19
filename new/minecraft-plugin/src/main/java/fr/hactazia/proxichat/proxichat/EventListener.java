@@ -44,7 +44,10 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
+
         main.eventSender.SendPlayerJoin(event.getPlayer());
+        main.eventSender.SendChannels(event.getPlayer(), event.getPlayer().getGameMode());
+        main.eventSender.SendPosition(event.getPlayer());
     }
 
     public void onPong() {

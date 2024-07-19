@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
     "dev": "npx ts-node index.ts",
-    "token": "npx ts-node ./generateToken.ts"
+    "token": "npx ts-node ./scripts/generateToken.ts"
   },
   "keywords": [],
   "author": "Hactazia",

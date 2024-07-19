@@ -104,7 +104,9 @@ export default class LinkerHandler {
             request.data.content.links.push(data.data);
         } else request.data.content.links[index] = data.data;
         request.data.token = JwtManager.sign(request.data.content);
-        response.cookie('_uid', request.data.token);
+        response.cookie('_uid', request.data.token, {
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+        });
         data.attributed = true;
         return response.status(200).sendFile('link.html', { root: getPublicPath() });
     }

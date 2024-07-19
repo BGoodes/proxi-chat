@@ -138,20 +138,156 @@ select.btn.w-100 {
 #playerlist .user {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 0.5em 1em;
     background-color: #35312e;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: solid 1px rgba(255, 255, 255, 0.1);
     border-radius: 0.5em;
-    transition: background-color 0.1s;
+    overflow: hidden;
 }
+
+#playerlist .user .user-info {
+    display: flex;
+    background-color: #35312e;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: solid 1px rgba(255, 255, 255, 0.1);
+    border-radius: 0.5em;
+    padding: 0.5em 1em;
+    margin: -1px -1px;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% + 2px);
+    transition: background-color 0.1s;
+    z-index: 1;
+}
+
+#playerlist .user .user-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    padding: 1em;
+}
+
+#playerlist .user .user-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* <div class="user-volume">
+<input type="range" class="volume" min="0" max="100" value="100">
+<button class="mute">Mute</button>
+</div> */
+
+#playerlist .user .user-options .user-volume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#playerlist .user .user-options .user-volume input {
+    width: 100%;
+    margin-right: 1em;
+    height: 2em;
+}
+
+
+
+#playerlist .user .user-options .user-volume button {
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
+    background-color: #35312e;
+    color: #d6d6d6;
+    border: solid 1px #d6d6d6;
+    transition: background-color 0.2s, color 0.2s;
+    height: 2em;
+    width: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#playerlist .user .user-options .user-volume button.muted {
+    background-color: #d6d6d6;
+    color: #35312e;
+}
+
+/* la zone de déplacement */
+.user-volume input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
+    /*  slider progress trick  */
+    background: transparent;
+}
+
+/* Track: webkit browsers */
+.user-volume input[type="range"]::-webkit-slider-runnable-track {
+    background: transparent;
+}
+.user-volume input[type="range"]::-moz-range-track {
+    background: transparent;
+    height: 0;
+  }
+
+/* Thumb: webkit */
+/* Thumb: webkit */
+input[type="range"]::-webkit-slider-thumb {
+    /* removing default appearance */
+    -webkit-appearance: none;
+    appearance: none; 
+    height: 2em;
+    width: 2em;
+    border-radius: 0.5em;
+    background-color: #35312e;
+    border: solid 1px #d6d6d6;
+    transition: background-color 0.2s, color 0.2s;
+    box-shadow: calc(-150px - 1em) 0 0 150px #d6d6d6;
+  }
+
+
+/* Thumb: Firefox */
+.user-volume input[type="range"]::-moz-range-thumb {
+    height: 2em;
+    width: 2em;
+    border-radius: 0.5em;
+    background-color: #35312e;
+    border: solid 1px #d6d6d6;
+    transition: background-color 0.2s, color 0.2s;
+    box-shadow: calc(-150px - 1em) 0 0 150px #d6d6d6;
+}
+
+#playerlist .user .user-options .user-volume button:hover {
+    background-color: #d6d6d6;
+    color: #35312e;
+}
+
+#playerlist .user .user-options .user-volume button img {
+    width: 1em;
+    height: 1em;
+}
+
+#playerlist .user .user-options .user-volume button:hover img {
+    filter: brightness(0) invert(0);
+}
+
+
+#playerlist .user.you .user-options {
+    display: none;
+}
+
+
 
 #playerlist .user:not(:first-child) {
     margin-top: 1em;
 }
 
-#playerlist .user:hover {
+#playerlist .user .user-info:hover {
     background-color: #3e3a37;
 }
 
