@@ -382,7 +382,7 @@ export default class ConnectorHandler {
         let users = this.getUsersByPlayer(player.id, server.link);
         if (!users.length) {
             var tempLink = this.main.linkhandler.getLink(player.id, server.link);
-            if (!tempLink) {
+            if (!tempLink || tempLink.expiration < new Date() || tempLink.attributed) {
                 tempLink = this.main.linkhandler.makeLink({ type: server.link, id: player.id }, server.content.uid);
                 console.log('Link created', tempLink.id);
             } else console.log('Link already exists', tempLink.id);
