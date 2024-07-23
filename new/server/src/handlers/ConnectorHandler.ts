@@ -32,6 +32,7 @@ interface ConChatter {
     player_id: string;
     server_id: string;
     socket_id: string;
+    peer_id: string;
 }
 
 
@@ -200,7 +201,7 @@ export default class ConnectorHandler {
         return Array.from(this.chatters.values()).filter(c => c.socket_id === socket_id);
     }
 
-    onChatterJoin(socket_id: string, data: { session_id: string, type: string, player_id: string }) {
+    onChatterJoin(socket_id: string, data: { session_id: string, type: string, player_id: string, peer_id: string }) {
         let chatter = this.getChatter(data.player_id, data.session_id, data.type);
         let player = this.getPlayer(data.player_id, data.type, data.session_id);
         let user = this.getUserWithSocket(socket_id, data.type, data.player_id);
@@ -218,6 +219,7 @@ export default class ConnectorHandler {
             type: data.type,
             player_id: data.player_id,
             server_id: data.session_id,
+            peer_id: data.peer_id,
             socket_id
         });
 
@@ -235,12 +237,13 @@ export default class ConnectorHandler {
             player: {
                 id: player.player_id,
                 display: player.display,
-                avatar: player.avatar
+                avatar: player.avatar,
             },
             players: server.players.map(p => ({
                 id: p.id,
                 display: p.name,
-                avatar: p.avatar
+                avatar: p.avatar,
+                peer_id: this.getChatterByPlayerServer(p.id, server.link, server.group)?.peer_id || null
             }))
         });
 
@@ -251,12 +254,14 @@ export default class ConnectorHandler {
                 this.sendToSocket(socket_id, 'chatter_joined', {
                     player_id: otherPlayer.id,
                     session_id: server.group,
-                    type: server.link
+                    type: server.link,
+                    peer_id: otherChatter.peer_id
                 });
                 this.sendToSocket(otherChatter.socket_id, 'chatter_joined', {
                     player_id: player.player_id,
                     session_id: server.group,
-                    type: server.link
+                    type: server.link,
+                    peer_id: data.peer_id
                 });
             }
         }
@@ -276,10 +281,8 @@ export default class ConnectorHandler {
             chatter = Array.from(this.chatters.values()).find(c => c.socket_id === socket_id);
             if (!chatter) return console.log('4 Chatter not found');
             data = { player_id: chatter.player_id, type: chatter.type, server_id: chatter.server_id, user_id: chatter.server_id };
-        } else {
-            console.log('Data', data);
-            chatter = this.getChatter(data.player_id, data.server_id, data.type);
-        }
+        } else             chatter = this.getChatter(data.player_id, data.server_id, data.type);
+        
 
         let server = this.getServer(data.server_id, data.type);
         let player = this.getPlayer(data.player_id, data.type, data.server_id);
@@ -302,7 +305,7 @@ export default class ConnectorHandler {
             player: {
                 id: player.player_id,
                 display: player.display,
-                avatar: player.avatar
+                avatar: player.avatar,
             }
         });
 
@@ -384,8 +387,8 @@ export default class ConnectorHandler {
             var tempLink = this.main.linkhandler.getLink(player.id, server.link);
             if (!tempLink || tempLink.expiration < new Date() || tempLink.attributed) {
                 tempLink = this.main.linkhandler.makeLink({ type: server.link, id: player.id }, server.content.uid);
-                console.log('Link created', tempLink.id);
-            } else console.log('Link already exists', tempLink.id);
+                console.log('[PChat] Link created', tempLink.id);
+            } else console.log('[PChat] Link already exists', tempLink.id);
             this.sendToServer(server.address, server.port, 'connector_link', {
                 id: player.id,
                 url: new URL('/link/' + tempLink.id, getPreferedURL()).toString(),
@@ -500,15 +503,15 @@ export default class ConnectorHandler {
     }
 
     onServerCreate(server: NetServer) {
-        console.log('Server create', server.link, server.group);
+        console.log('[PChat] Server create', server.link, server.group);
     }
 
     onServerDelete(server: NetServer) {
-        console.log('Server delete', server.link, server.group);
+        console.log('[PChat] Server delete', server.link, server.group);
     }
 
     onServerUpdate(server: NetServer) {
-        console.log('Server update', server.link, server.group);
+        console.log('[PChat] Server update', server.link, server.group);
     }
 
     getTempLink(link_id: string, type: string) {
@@ -563,13 +566,9 @@ export default class ConnectorHandler {
 
             var calculted_distance = toFixedNumber(Math.max(Math.min(relation.distance, server.max_distance), server.min_distance), 2);
 
-            console.log('Relation', !!relation, a_can_send_to_b, b_can_send_to_a, relation.distance, !!a_chatter, !!b_chatter);
-
             // signal a can send to b
-            console.log('atob Can send', a_can_send_to_b, !a_relation.can_send, !!a_chatter);
             if (a_can_send_to_b && !a_relation.can_send && a_chatter) {
                 a_relation.can_send = true;
-                console.log('Active voice', a_player.id, b_player.id, server.group, relation.distance, server.link);
                 this.sendToSocket(a_chatter.socket_id, 'player_distance', {
                     player_id: b_player.id,
                     session_id: server.group,
@@ -581,7 +580,6 @@ export default class ConnectorHandler {
             // signal a can't send to b
             if (!a_can_send_to_b && a_relation.can_send && a_chatter) {
                 a_relation.can_send = false;
-                console.log('Inactive voice', a_player.id, b_player.id, server.group, relation.distance, server.link);
                 this.sendToSocket(a_chatter.socket_id, 'player_distance', {
                     player_id: b_player.id,
                     session_id: server.group,
@@ -591,10 +589,8 @@ export default class ConnectorHandler {
             }
 
             // signal b can send to a
-            console.log('btoa Can send', b_can_send_to_a, !b_relation.can_send, !!b_chatter);
             if (b_can_send_to_a && !b_relation.can_send && b_chatter) {
                 b_relation.can_send = true;
-                console.log('Active voice', b_player.id, a_player.id, server.group, relation.distance, server.link);
                 this.sendToSocket(b_chatter.socket_id, 'player_distance', {
                     player_id: a_player.id,
                     session_id: server.group,
@@ -606,7 +602,6 @@ export default class ConnectorHandler {
             // signal b can't send to a
             if (!b_can_send_to_a && b_relation.can_send && b_chatter) {
                 b_relation.can_send = false;
-                console.log('Inactive voice', b_player.id, a_player.id, server.group, relation.distance, server.link);
                 this.sendToSocket(b_chatter.socket_id, 'player_distance', {
                     player_id: a_player.id,
                     session_id: server.group,
@@ -636,7 +631,7 @@ export default class ConnectorHandler {
     }
 
     onPlayerChannels(server: NetServer, player: NetPlayer) {
-        console.log('Player channels', player);
+        console.log('[PChat] Player channels update', player.id, server.link, server.group);
         this.onPlayerMove(server, player);
     }
 

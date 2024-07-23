@@ -28,13 +28,16 @@ export default class SocketController {
             content: JwtManager.verify(token)
         };
         if (!socket.data.content) return next(new Error('Unauthorized'));
-        console.log(socket.handshake.address, '|', 'SOCKET', '>', socket.data.content.uid, 'as', socket.id);
         return next();
     }
 
     onConnection(socket: NetSocket) {
         this.httpManager.main.emit('socket_connection', socket);
-        socket.on('disconnect', () => this.httpManager.main.emit('socket_disconnect', socket));
+        console.log(socket.handshake.address, '|', 'SOCKET', '>', socket.data.content?.uid, 'as', socket.id, 'connected');
+        socket.on('disconnect', () => {
+            this.httpManager.main.emit('socket_disconnect', socket);
+            console.log(socket.handshake.address, '|', 'SOCKET', '<', socket.id, 'disconnected');
+        });
     }
 }
 

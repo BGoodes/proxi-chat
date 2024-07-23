@@ -34,8 +34,10 @@
     border-color: var(--tertiary-border) !important;
 }
 
-
 .hide {
-    display: none;
+    display: none !important
 }
 
+.dropup .dropdown-toggle::after {
+    margin-left: .5em;
+}

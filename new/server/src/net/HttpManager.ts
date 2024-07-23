@@ -4,22 +4,27 @@ import { createServer as createSecureServer } from "https";
 import { IncomingMessage, ServerResponse, Server, createServer } from "http";
 import RestController from "./RestController";
 import SocketController from "./SocketController";
+import PeerController from "./PeerController";
 
 export default class HttpManager {
 
     server: HttpServer;
     rest: RestController;
     socket: SocketController;
+    peer: PeerController;
+
 
     constructor(public readonly main: Main) {
         this.rest = new RestController(this);
         this.server = isSslEnabled() ? createSecureServer(getSslOptions(), this.rest.express) : createServer(this.rest.express);
+        this.peer = new PeerController(this);
         this.socket = new SocketController(this);
     }
 
     onUpdate() { }
 
     init() {
+        this.peer.init();
         this.rest.init();
         this.socket.init();
     }

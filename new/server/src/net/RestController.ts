@@ -16,10 +16,10 @@ export default class RestController {
         this.express.use(cookieParser());
         this.express.use(this.before.bind(this) as RequestHandler);
         this.express.use(Express.static(getPublicPath()));
-        // debut handlers
+
+        this.express.use("/rtc", this.httpManager.peer.peerServer);
         this.express.use('/link', this.httpManager.main.linkhandler.linkRouter());
         this.express.use('/api', this.httpManager.main.linkhandler.apiRouter());
-
 
         // end of handlers
         this.express.use(this.after.bind(this) as RequestHandler);

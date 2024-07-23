@@ -70,3 +70,18 @@ export async function prompCloseDoubleWindow(lsc) {
         await showModal();
     }
 }
+
+export function getCookies() {
+    return document.cookie.split(';').reduce((acc, cookie) => {
+        let [key, value] = cookie.split('=');
+        acc[key.trim()] = value;
+        return acc;
+    }, {});
+}
+
+export function changeVolume(streams, id, volume, factor) {
+    let stream = streams.streams.get(id);
+    if (!stream) return;
+    stream.gain.gain.value = toFixedNumber(volume * factor, 2);
+    stream.volume = volume;
+}

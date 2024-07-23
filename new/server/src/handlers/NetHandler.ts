@@ -192,7 +192,6 @@ export class NetHandler {
         var player = server.players.find(p => p.id === obj.id);
         if (!player) return console.log('Channels: Player not found');
         player.channels = obj.channels;
-        console.log('Channels', obj.channels);
         this.main.emit('player_channels', server, player);
     }
 
