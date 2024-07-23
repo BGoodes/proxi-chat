@@ -1,18 +1,28 @@
-function Rolloff(factor, distance, min, max) {
-    return Math.min(1, Math.max(0,
-        factor * (
-            (-1 / (max - min)) * (distance - max)
-        )
-    ));
-}
+import { prompMicrophone,prompCloseDoubleWindow, Rolloff, toFixedNumber, showModal  } from './utils.js';
+import LocalStorageCommunication from './lsc.js';
+import Logger from './logger.js';
+import SessionManager from './sessions.js';
 
-function toFixedNumber(num, digits) {
-    const multiplier = Math.pow(10, digits);
-    return Math.round(num * multiplier) / multiplier;
-}
+const lsc = new LocalStorageCommunication();
 
 window.addEventListener('load', async () => {
-    let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    Logger.clear();
+    Logger.logText('Loading...');
+    SessionManager.clear();
+
+    await prompCloseDoubleWindow(lsc);
+    let stream = await prompMicrophone();
+    if(!stream) {
+        await showModal('microphone-required-error');
+        return;
+    }
+
+    Logger.clear();
+    Logger.logText('Audio stream obtained.');
+
+
+
     let loglist = document.getElementById('loglist');
     let sessionList = document.getElementById('sessionlist');
     let playerlist = document.getElementById('playerlist');
@@ -378,6 +388,11 @@ window.addEventListener('load', async () => {
 
                 range.addEventListener('input', (e) => {
                     audio.volume = range.value / 100;
+                });
+
+                li.addEventListener('click', (e) => {
+                    console.log(e.target);
+                    e.target.classList.toggle('expanded');
                 });
             }
 

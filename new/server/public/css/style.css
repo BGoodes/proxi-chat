@@ -1,3 +1,8 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("./system.css");
+@import url("./user.css");
+@import url("./modal.css");
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,19 +11,19 @@
 
 html,
 body {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     margin: 0;
     padding: 0;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #302d2b;
-    color: #d6d6d6;
+    background-color: var(--primary-bg);
+    color: var(--primary-color);
 }
 
-.container {
+.gridder {
     display: grid;
     grid-template-columns: 24em 1fr;
     grid-template-rows: 6em 1fr;
@@ -28,13 +33,14 @@ body {
         "navbar navbar"
         "users logs";
     height: 100vh;
+    width: 100vw;
 }
 
-.navbar {
+.gridder .navbar {
     grid-area: navbar;
 }
 
-.users {
+.gridder .users {
     grid-area: users;
     display: grid;
     grid-template-columns: 1fr;
@@ -45,221 +51,48 @@ body {
         "session"
         "userlist"
         "options";
+    height: calc(100vh - 6em);
 }
 
-.session {
-    grid-area: session;
-}
-
-.userlist {
-    grid-area: userlist;
-    border-top: solid 1px rgba(255, 255, 255, 0.1);
-    border-bottom: solid 1px rgba(255, 255, 255, 0.1);
-}
-
-.options {
-    grid-area: options;
-}
-
-
-.logs {
+.gridder .logs {
     grid-area: logs;
     background-color: #35312e;
     border-top-left-radius: 1em;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-    border-top: solid 1px rgba(255, 255, 255, 0.1);
-    border-left: solid 1px rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 10px var(--primary-shadow);
+    border-top: solid 1px var(--primary-border);
+    border-left: solid 1px var(--primary-border);
+    padding: 1em;
 }
 
-.modal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+.gridder .users .userlist {
+    grid-area: userlist;
+    border-top: solid 1px var(--primary-border);
+    border-bottom: solid 1px var(--primary-border);
+    padding: 1em;
+    margin: 0;
+    list-style-type: none;
+    overflow: hidden auto;
 }
 
-.modal .centred {
+.gridder .users .userlist>*:not(:first-child) {
+    margin-top: calc(2em - 2px);
+}
+
+.gridder .users .session {
+    grid-area: session;
+    padding: .5em 1em;
+}
+
+.gridder .users .session h3 {
+    width: 100%;
     text-align: center;
 }
 
-img.icon {
-    filter: brightness(0) invert(1);
-}
-
-a.btn {
-    display: inline-block;
-    padding: 0.5em 1em;
-    margin: 0.5em;
-    border-radius: 0.5em;
-    text-decoration: none;
-    color: #d6d6d6;
-    background-color: #35312e;
-    border: solid 1px #d6d6d6;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-a.btn:hover {
-    background-color: #d6d6d6;
-    color: #35312e;
-}
-
-select.btn {
-    padding: 0.5em 1em;
-    margin: 0.5em;
-    border-radius: 0.5em;
-    text-decoration: none;
-    color: #d6d6d6;
-    background-color: #35312e;
-    border: solid 1px #d6d6d6;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-select.btn.w-100 {
-    width: calc(100% - 1em);
-}
-
-.w-100 {
-    width: 100%;
-}
-
-.hide {
-    display: none;
-}
-
-.p-1 {
+.gridder .users>.options {
+    grid-area: options;
     padding: 1em;
-}
-
-#playerlist {
-    list-style-type: none;
-    padding: 0;
-}
-
-#playerlist .user {
     display: flex;
     justify-content: space-between;
-    flex-direction: column;
-    align-items: center;
-    background-color: #35312e;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border: solid 1px rgba(255, 255, 255, 0.1);
-    border-radius: 0.5em;
-    overflow: hidden;
-}
-
-#playerlist .user .user-info {
-    display: flex;
-    background-color: #35312e;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border: solid 1px rgba(255, 255, 255, 0.1);
-    border-radius: 0.5em;
-    padding: 0.5em 1em;
-    margin: -1px -1px;
-    justify-content: space-between;
-    align-items: center;
-    width: calc(100% + 2px);
-    transition: background-color 0.1s;
-    z-index: 1;
-}
-
-#playerlist .user .user-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-    padding: 1em;
-}
-
-#playerlist .user .user-canvas {
-    width: 100%;
-    height: 100%;
-}
-
-/* <div class="user-volume">
-<input type="range" class="volume" min="0" max="100" value="100">
-<button class="mute">Mute</button>
-</div> */
-
-#playerlist .user .user-options .user-volume {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-#playerlist .user .user-options .user-volume input {
-    width: 100%;
-    margin-right: 1em;
-    height: 2em;
-}
-
-
-
-#playerlist .user .user-options .user-volume button {
-    padding: 0.5em 1em;
-    border-radius: 0.5em;
-    background-color: #35312e;
-    color: #d6d6d6;
-    border: solid 1px #d6d6d6;
-    transition: background-color 0.2s, color 0.2s;
-    height: 2em;
-    width: 2em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#playerlist .user .user-options .user-volume button.muted {
-    background-color: #d6d6d6;
-    color: #35312e;
-}
-
-/* la zone de déplacement */
-.user-volume input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    cursor: pointer;
-    outline: none;
-    /*  slider progress trick  */
-    background: transparent;
-}
-
-/* Track: webkit browsers */
-.user-volume input[type="range"]::-webkit-slider-runnable-track {
-    background: transparent;
-}
-.user-volume input[type="range"]::-moz-range-track {
-    background: transparent;
-    height: 0;
-  }
-
-/* Thumb: webkit */
-/* Thumb: webkit */
-input[type="range"]::-webkit-slider-thumb {
-    /* removing default appearance */
-    -webkit-appearance: none;
-    appearance: none; 
-    height: 2em;
-    width: 2em;
-    border-radius: 0.5em;
-    background-color: #35312e;
-    border: solid 1px #d6d6d6;
-    transition: background-color 0.2s, color 0.2s;
-    box-shadow: calc(-150px - 1em) 0 0 150px #d6d6d6;
-  }
-
-
-/* Thumb: Firefox */
-.user-volume input[type="range"]::-moz-range-thumb {
-    height: 2em;
-    width: 2em;
-    border-radius: 0.5em;
-    background-color: #35312e;
-    border: solid 1px #d6d6d6;
-    transition: background-color 0.2s, color 0.2s;
-    box-shadow: calc(-150px - 1em) 0 0 150px #d6d6d6;
 }
 
 #playerlist .user .user-options .user-volume button:hover {
@@ -283,40 +116,11 @@ input[type="range"]::-webkit-slider-thumb {
 
 
 
-#playerlist .user:not(:first-child) {
-    margin-top: 1em;
-}
 
 #playerlist .user .user-info:hover {
     background-color: #3e3a37;
 }
 
-#playerlist .user .usericon {
-    display: flex;
-    align-items: center;
-}
-
-#playerlist .user .usericon img {
-    width: 2em;
-    height: 2em;
-    border-radius: .25em;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border: solid 1px rgba(255, 255, 255, 0.1);
-}
-
-#playerlist .user .username {
-    margin-left: 1em;
-}
-
-#playerlist .user .status {
-    display: flex;
-    align-items: center;
-}
-
-#playerlist .user .status>* {
-    margin-left: 0.25em;
-    width: 1.5em;
-    height: 1.5em;
-    border-radius: .25em;
-    filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+#playerlist .user .user-info:active {
+    background-color: #534e4a;
 }

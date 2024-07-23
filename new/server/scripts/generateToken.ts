@@ -1,5 +1,5 @@
 import DotEnv from 'dotenv';
-import JwtManager, { JwtPayload } from './src/security/JwtManager';
+import JwtManager, { JwtPayload } from '../src/security/JwtManager';
 import { randomBytes } from 'crypto';
 DotEnv.config();
 
@@ -40,6 +40,12 @@ const content: JwtPayload = {
             id: 'd8092d79-d42a-4481-b8fa-97efacb4e2d6', 
             at: Date.now(), 
             by: 'generator' 
+        },
+        {
+            type: 'moderator',
+            id: 'admin-01',
+            at: Date.now(),
+            by: 'generator'
         }
     ],
     updated_at: Date.now()

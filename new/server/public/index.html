@@ -4,57 +4,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>ProxiChat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="./script.js"></script>
+  <script src="./js/script.js" type="module"></script>
 </head>
 
 <body>
-  <div class="container">
+  <div class="gridder">
     <div class="navbar"></div>
     <div class="users">
-      <div class="session p-1">
-        <h3>Session</h3>
+      <div class="session">
+        <h3 id="session-title">Display</h3>
       </div>
-      <div class="userlist p-1">
-        <ul id="playerlist">
-          <li id="playertemplate" class="user">
-            <div class="user-info">
-              <div class="usericon">
-                <img class="avatar" src="https://s.namemc.com/2d/skin/face.png?id=28804bc80043e6ba&scale=4">
-                <div class="username">
-                  <h4 class="display">Username</h4>
-                </div>
-              </div>
-              <div class="status"></div>
+      <ul class="userlist" id="user-list"> </ul>
+      <div class="options">
+        <div class="dropup-center dropup">
+          <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Centered dropup
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">
+
+              </a></li>
+            <li><a class="dropdown-item" href="#">Action two</a></li>
+            <li><a class="dropdown-item" href="#">Action three</a></li>
+          </ul>
+        </div>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button type="button" class="btn">
+            <div class="muted hide">
+              <i class="bi bi-mic-mute-fill"></i>
             </div>
-            <div class="user-options">
-              <audio class="user-audio"></audio>
-              <div class="user-volume">
-                <input type="range" class="volume-range" min="0" max="100" value="100">
-                <button class="mute mute-audio">
-                  <img width="98" height="98" src="https://img.icons8.com/fluency-systems-filled/98/000000/no-audio.png" class="icon">
-                </button>
-              </div>
-              <canvas class="visualizer w-100 hide"></canvas>
+            <div class="unmuted">
+              <i class="bi bi-mic-fill"></i>
             </div>
-          </li>
-        </ul>
+          </button>
+          <button type="button" class="btn">
+            <div class="unmute">
+              <i class="bi bi-volume-up-fill"></i>
+            </div>
+            <div class="mute hide">
+              <i class="bi bi-volume-mute-fill"></i>
+            </div>
+          </button>
+          <button type="button" class="btn">
+            <i class="bi bi-gear-fill"></i>
+          </button>
+        </div>
       </div>
-      <div class="options p-1">
+      <div class="hide">
         <select id="sessionlist" class="btn w-100">
           <option value="">(Déconnecté) Sélectionner une session</option>
         </select>
         <audio id="localaudio" class="w-100" autoplay controls></audio>
       </div>
     </div>
-    <div class="logs">
-      <div class="log p-1">
-        <h3>Logs</h3>
+    <div class="logs" id="logger">
+
+    </div>
+  </div>
+  <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modal-popup" tabindex="-1"
+    aria-labelledby="modal-popup" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div id="microphone-required" class="text-center hide">
+            <i class="bi bi-mic-mute-fill display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Aucun microphone détecté</h5>
+            <p>Veuillez autoriser l'accès à votre microphone pour utiliser ProxiChat.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment faire
+                ?</a>
+            </p>
+          </div>
+          <div id="microphone-required-error" class="text-center hide">
+            <i class="bi bi-mic-mute-fill display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Erreur de microphone</h5>
+            <p>Impossible d'accéder à votre microphone.</p>
+            <p>Vous avez peut-être bloqué l'accès à votre microphone.</p>
+            <p class="mt-4">
+              <a onclick="location.reload()" class="btn" target="_blank">Réessayer</a>
+            </p>
+          </div>
+          <div id="no-in-session" class="text-center hide">
+            <i class="bi bi-geo-alt-fill display-3 text-info"></i>
+            <h5 class="modal-title my-4">Aucune session en cours</h5>
+            <p>Rejoignez une session pour discuter avec d'autres joueurs.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Je suis déjà dans un session...</a>
+            </p>
+          </div>
+          <div id="not-linked" class="text-center hide">
+            <i class="bi bi-link-45deg display-1 text-info"></i>
+            <h5 class="modal-title my-4">Vous n'êtes pas connecté</h5>
+            <p>Vous devez lier votre compte de jeu..</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment lier son compte ?</a>
+            </p>
+          </div>
+          <div id="double-window-detected" class="text-center hide">
+            <i class="bi bi-window-stack display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Fenêtre déjà ouverte</h5>
+            <p>Vous avez déjà une fenêtre ouverte.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment faire ?</a>
+            </p>
+          </div>
+          <div id="connection-error" class="text-center hide">
+            <i class="bi bi-wifi-off display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Erreur de connexion</h5>
+            <p>Impossible de se connecter au serveur.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Réessayer</a>
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="p-1" id="loglist">
-      </div>
+    </div>
+    <button class="hide" data-bs-toggle="modal" data-bs-target="#modal-popup" id="modal-popup-btn"></button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"></script>
 </body>
 
 </html>

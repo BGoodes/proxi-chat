@@ -1,0 +1,16 @@
+body:has(.modal-backdrop.show) .gridder {
+    filter: blur(.5em) brightness(1);
+}
+
+.modal-content {
+    background-color: var(--primary-bg);
+    color: var(--primary-color);
+    border-radius: 1em;
+    border: solid 1px var(--primary-border);
+    box-shadow: 0 0 10px var(--primary-shadow);
+    padding: 1em;
+}
+
+.modal-body {
+    padding: 1em 3em;
+}
