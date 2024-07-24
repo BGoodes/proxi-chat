@@ -2,7 +2,7 @@ export class StreamManager {
 
     /**
      * Streams
-     * @type {Map<string, any>}
+     * @type {Map<string, {context: AudioContext, source: MediaStreamAudioSourceNode, destination: MediaStreamAudioDestinationNode, gain: GainNode, controlled: MediaStream, original: MediaStream, volume: number}>}
      */
     streams;
 

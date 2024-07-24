@@ -11,7 +11,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class EventListener implements Listener {
     public ProxiChatPlugin main;
@@ -115,4 +120,48 @@ public class EventListener implements Listener {
         if (player == null) return;
         player.sendMessage("You are now disconnected from ProxiChat!");
     }
+
+    public void onChatterData(JsonObject message) {
+        var player = main.getServer().getPlayer(UUID.fromString(message.get("id").getAsString()));
+        if (player == null) return;
+        var event = message.get("event").getAsString();
+        var data = message.get("data").getAsJsonObject();
+        switch (event) {
+            case "is_mute":
+                var mute = data.get("mute").getAsBoolean();
+                var by = data.get("by").getAsInt();
+                var ir = data.has("state");
+                if (by == 1 && !ir)
+                    player.sendMessage(mute ? "You are now muted!" : "You are no longer muted!");
+                break;
+            default:
+                main.getLogger().warning("Unknown chatter data event: " + event);
+        }
+    }
+
+    public CompletableFuture<Boolean> isMuted(Player target) {
+        var future = new CompletableFuture<Boolean>();
+        var json = new JsonObject();
+        var random = new Random();
+        var id = new UUID(random.nextLong(), random.nextLong());
+        json.addProperty("state", id.toString());
+        main.eventSender.SendData(target, "get_mute", json);
+        tasks.add(data -> {
+            if (!data.get("type").getAsString().equals("chatter_data")) return false;
+            if (!data.get("id").getAsString().equals(target.getUniqueId().toString())) return false;
+            if (!data.get("event").getAsString().equals("is_mute")) return false;
+            var deq = data.get("data").getAsJsonObject();
+            if (!deq.has("state") || !deq.get("state").getAsString().equals(id.toString())) return false;
+            future.complete(data.get("data").getAsJsonObject().get("mute").getAsBoolean());
+            return true;
+        });
+        return future;
+    }
+
+    public List<Function<JsonObject, Boolean>> tasks = new ArrayList<>();
+
+    public void onEvent(JsonObject data) {
+        tasks.removeIf(task -> task.apply(data));
+    }
+
 }

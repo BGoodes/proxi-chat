@@ -103,6 +103,13 @@ body {
     cursor: pointer;
 }
 
+.button-action:not(.active) .button-action-enable {
+    display: none;
+}
+
+.button-action.active .button-action-disable {
+    display: none;
+}
 
 
 

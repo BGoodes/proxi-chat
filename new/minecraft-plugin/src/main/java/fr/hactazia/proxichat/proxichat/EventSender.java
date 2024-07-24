@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class EventSender {
     public ProxiChatPlugin main;
@@ -111,5 +112,23 @@ public class EventSender {
         json.addProperty("type", "make_connector_link");
         json.addProperty("id", player.getUniqueId().toString());
         main.udpHandler.send(json);
+    }
+
+    public void SendData(Player player, String event, JsonObject data) {
+        var json = new JsonObject();
+        json.addProperty("type", "chatter_data");
+        json.addProperty("id", player.getUniqueId().toString());
+        json.addProperty("event", event);
+        json.add("data", data);
+        main.udpHandler.send(json);
+    }
+
+    public CompletableFuture<Boolean> SetMute(Player player, boolean mute) {
+        var future = new CompletableFuture<Boolean>();
+        var json = new JsonObject();
+        json.addProperty("mute", mute);
+        SendData(player, "set_mute", json);
+        main.eventListener.isMuted(player).thenAccept(mute1 -> future.complete(mute1 == mute));
+        return future;
     }
 }

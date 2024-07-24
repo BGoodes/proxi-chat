@@ -24,7 +24,7 @@ export async function showModal(id) {
     let modal = document.querySelector("#modal-popup");
     if (!id && modal.classList.contains('show')) {
         document.querySelector('#modal-popup-btn').click();
-        await new Promise(resolve => setTimeout(resolve, 450));
+        await new Promise(resolve => setTimeout(resolve, 750));
         return;
     }
 
@@ -39,19 +39,23 @@ export async function showModal(id) {
 
     if (!modal.classList.contains('show')) {
         document.querySelector('#modal-popup-btn').click();
-        await new Promise(resolve => setTimeout(resolve, 450));
+        await new Promise(resolve => setTimeout(resolve, 750));
     }
 }
 
 export async function prompMicrophone() {
-    let sm = false;
+    let sm = 0;
     const idt = !sm && setTimeout(() => {
         showModal('microphone-required');
-        sm = true;
-    }, 100);
+        sm = Date.now();
+    }, 250);
     let stream = await getMicStream();
     clearTimeout(idt);
-    if (sm) await showModal();
+    if (sm > 0) {
+        if (Date.now() - sm < 1000)
+            await new Promise(resolve => setTimeout(resolve, 1000 - (Date.now() - sm)));
+        await showModal();
+    }
     return stream;
 }
 
@@ -66,9 +70,9 @@ export async function prompCloseDoubleWindow(lsc) {
         show_modal = true;
         await new Promise(resolve => setTimeout(resolve, 1000));
     } while (true);
-    if (show_modal) {
+    if (show_modal)
         await showModal();
-    }
+
 }
 
 export function getCookies() {

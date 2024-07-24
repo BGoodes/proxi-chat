@@ -65,6 +65,7 @@ export default class ConnectorHandler {
         this.main.on('server_delete', this.onServerDelete.bind(this));
         this.main.on('server_update', this.onServerUpdate.bind(this));
         this.main.on('socket_message', this.onSocketMessage.bind(this));
+        this.main.on('server_data', this.onServerData.bind(this));
     }
 
     users: Map<string, ConUser> = new Map();
@@ -81,72 +82,47 @@ export default class ConnectorHandler {
             case 'disconnect_session':
                 this.onChatterLeave(socket.id, data);
                 break;
-            case 'player_offer':
-                this.onChatterOffer(socket.id, data);
-                break;
-            case 'player_answer':
-                this.onChatterAnswer(socket.id, data);
-                break;
-            case 'player_ice':
-                this.onChatterIce(socket.id, data);
+            case 'session_data':
+                this.onChatterData(socket.id, data);
                 break;
             default:
                 console.log('Unknown event', event);
         }
     }
 
-    onChatterOffer(socket_id: string, data: { offer: any, type: string, player_id: string, session_id: string, voice_id: string }) {
-        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
-
-        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
-        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
-        if (!by_chatter || !to_chatter) return console.log('6 Chatter not found', !by_chatter, !to_chatter);
-        // console.log(`[PChat] Chatter offer by ${by_chatter.player_id} for ${to_chatter.player_id}`);
-
-        this.sendToSocket(to_chatter.socket_id, 'player_offer', {
-            offer: data.offer,
-            player_id: by_chatter.player_id,
-            session_id: by_chatter.server_id,
-            type: by_chatter.type,
-            voice_id: data.voice_id
+    onChatterData(socket_id: string, data: { type: string, session_id: string, data: any, event: string }) {
+        if (typeof data.event !== 'string' || typeof data.data !== 'object') return console.log('1 Event or data not found');
+        let chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
+        if (!chatter) return console.log('2 Chatter not found');
+        let server = this.getServer(data.session_id, data.type);
+        if (!server) return console.log('3 Server not found');
+        let player = this.getPlayer(chatter.player_id, data.type, data.session_id);
+        if (!player) return console.log('4 Player not found');
+        console.log('[PChat] Chatter data', socket_id, chatter.player_id, data.type, data.session_id, data.event);
+        this.sendToServer(server.address, server.port, 'chatter_data', {
+            id: chatter.player_id,
+            data: data.data,
+            event: data.event
         });
     }
 
-    onChatterAnswer(socket_id: string, data: { answer: any, type: string, player_id: string, session_id: string, voice_id: string }) {
-        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
-        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
-        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
-        if (!by_chatter || !to_chatter) return console.log('7 Chatter not found', !by_chatter, !to_chatter);
-        // console.log(`[PChat] Chatter answer by ${by_chatter.player_id} for ${to_chatter.player_id}`);
-
-        this.sendToSocket(to_chatter.socket_id, 'player_answer', {
-            answer: data.answer,
-            player_id: by_chatter.player_id,
-            session_id: by_chatter.server_id,
-            type: by_chatter.type,
-            voice_id: data.voice_id
+    onServerData(server: NetServer, player: NetPlayer, event: string, data: any) {
+        let playerData = this.getPlayer(player.id, server.link, server.group);
+        if (!playerData) return console.log('5 Player not found');
+        let chatter = this.getChatterByPlayerServer(player.id, server.link, server.group);
+        if (!chatter) return console.log('6 Chatter not found');
+        console.log('[PChat] Server data', player.id, server.link, server.group, event);
+        this.sendToSocket(chatter.socket_id, 'session_data', {
+            session_id: server.group,
+            type: server.link,
+            player_id: player.id,
+            event,
+            data
         });
     }
 
     getChattersByServer(server_id: string, type: string) {
         return Array.from(this.chatters.values()).filter(c => c.server_id === server_id && c.type === type);
-    }
-
-    onChatterIce(socket_id: string, data: { ice: any, type: string, session_id: string, player_id: string, voice_id: string }) {
-        if (typeof data.voice_id !== 'string') return console.log('5 Voice id not found');
-
-        let by_chatter = this.getChattersBySocket(socket_id).find(c => c.type === data.type && c.server_id === data.session_id);
-        let to_chatter = this.getChatterByPlayerServer(data.player_id, data.type, data.session_id);
-        if (!by_chatter || !to_chatter) return console.log('8 Chatter not found', !by_chatter, !to_chatter);
-        // console.log(`[PChat] Chatter ice by ${by_chatter.player_id} for ${to_chatter.player_id}`);
-
-        this.sendToSocket(to_chatter.socket_id, 'player_ice', {
-            ice: data.ice,
-            player_id: by_chatter.player_id,
-            session_id: by_chatter.server_id,
-            type: by_chatter.type,
-            voice_id: data.voice_id
-        });
     }
 
     getUser(user_id: string, type: string, player_id: string) {
@@ -281,8 +257,8 @@ export default class ConnectorHandler {
             chatter = Array.from(this.chatters.values()).find(c => c.socket_id === socket_id);
             if (!chatter) return console.log('4 Chatter not found');
             data = { player_id: chatter.player_id, type: chatter.type, server_id: chatter.server_id, user_id: chatter.server_id };
-        } else             chatter = this.getChatter(data.player_id, data.server_id, data.type);
-        
+        } else chatter = this.getChatter(data.player_id, data.server_id, data.type);
+
 
         let server = this.getServer(data.server_id, data.type);
         let player = this.getPlayer(data.player_id, data.type, data.server_id);

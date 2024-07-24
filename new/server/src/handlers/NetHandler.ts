@@ -74,6 +74,8 @@ export class NetHandler {
             case 'make_connector_link':
                 this.onMakeConnectorLink(data, data.json);
                 break;
+            case "chatter_data":
+                this.onData(data, data.json);
             default:
                 console.log('Unknown type', data.json.type);
                 break;
@@ -89,6 +91,17 @@ export class NetHandler {
         else if (Buffer.isBuffer(data)) buffer = data;
         else buffer = Buffer.from(JSON.stringify(data));
         this.main.net.udp.socket.send(buffer, port, address);
+    }
+
+    onData(data: NetPacket, obj: any) {
+        if (obj.type !== 'chatter_data') return console.log('Chatter Data: Invalid type');
+        if (typeof obj.data !== 'object') return console.log('Chatter Data: Invalid data');
+        if (typeof obj.event !== 'string') return console.log('Chatter Data: Invalid channel');
+        var server = this.servers.find(s => s.address === data.address && s.port === data.port);
+        if (!server) return console.log('Chatter Data: Server not found');
+        var player = server.players.find(p => p.id === obj.id);
+        if (!player) return console.log('Chatter Data: Player not found');
+        this.main.emit('server_data', server, player, obj.event, obj.data);
     }
 
     onPing(data: NetPacket) {

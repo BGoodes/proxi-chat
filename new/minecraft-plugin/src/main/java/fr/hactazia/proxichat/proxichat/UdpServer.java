@@ -66,6 +66,7 @@ public class UdpServer {
 
     public void onJsonMessage(JsonObject message) {
         var type = message.get("type").getAsString();
+        main.eventListener.onEvent(message);
         switch (type) {
             case "ping":
                 main.udpHandler.send("{\"type\":\"pong\"}".getBytes());
@@ -92,6 +93,9 @@ public class UdpServer {
                 break;
             case "chatter_disconnect":
                 main.eventListener.onChatterDisconnect(message);
+                break;
+            case "chatter_data":
+                main.eventListener.onChatterData(message);
                 break;
             default:
                 main.getLogger().warning("Unknown message type: " + type);
