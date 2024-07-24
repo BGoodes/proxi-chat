@@ -60,7 +60,10 @@ public class UdpServer {
         try {
             onJsonMessage(JsonParser.parseString(new String(message)).getAsJsonObject());
         } catch (Exception e) {
-            main.getLogger().severe("Message conversion exception: " + e.getMessage());
+            main.getLogger().severe("Message conversion exception: " + e.getMessage() + "\n" + new String(message));
+            for (StackTraceElement element : e.getStackTrace()) {
+                main.getLogger().severe(element.toString());
+            }
         }
     }
 

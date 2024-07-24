@@ -57,6 +57,13 @@ socket.on('message', (event, data) => {
         sid: data.sid,
         type: data.type
     });
+
+    // auto join session (update)
+
+    if (ready && !sessions.selectedSession && sessions.sessions.size === 1) {
+        Logger.logText('Auto joining session.');
+        sessions.emit('select', sessions.sessions.values().next().value);
+    }
 });
 
 socket.on('message', (event, data) => {
@@ -169,6 +176,7 @@ socket.on('connect', async () => {
 });
 
 socket.on('disconnect', async () => {
+    ready = false;
     for (let id of streams.streams.keys())
         streams.close(id);
     peer.closePeer();
@@ -178,6 +186,7 @@ socket.on('disconnect', async () => {
     connected = false;
     await showModal('connection-error');
     modal = true;
+
 });
 
 peer.on('call', (call, incomming) => {

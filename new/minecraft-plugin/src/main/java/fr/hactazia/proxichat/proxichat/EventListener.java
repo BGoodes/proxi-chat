@@ -161,7 +161,12 @@ public class EventListener implements Listener {
     public List<Function<JsonObject, Boolean>> tasks = new ArrayList<>();
 
     public void onEvent(JsonObject data) {
-        tasks.removeIf(task -> task.apply(data));
+        for (var i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).apply(data)) {
+                tasks.remove(i);
+                i--;
+            }
+        }
     }
 
 }

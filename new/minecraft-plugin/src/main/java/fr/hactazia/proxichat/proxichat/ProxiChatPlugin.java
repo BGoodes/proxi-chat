@@ -77,11 +77,16 @@ public final class ProxiChatPlugin extends JavaPlugin implements TabCompleter {
     public void onDisable() {
         getLogger().info("ProxiChat is stopping...");
         for (var task : tasks) getServer().getScheduler().cancelTask(task);
+        for (Player player : getServer().getOnlinePlayers())
+            eventSender.SendPlayerQuit(player);
         udpHandler.close();
         udpHandler = null;
         udpServer.close();
         udpServer = null;
         group = null;
+        eventListener.tasks.clear();
+        eventListener = null;
+        eventSender = null;
     }
 
     @Override
