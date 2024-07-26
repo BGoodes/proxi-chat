@@ -11,9 +11,11 @@ export function toFixedNumber(num, digits) {
     return Math.round(num * multiplier) / multiplier;
 }
 
+let mic = null;
 export async function getMicStream() {
+    if (mic) return mic;
     try {
-        return await navigator.mediaDevices.getUserMedia({ audio: true });
+        return mic = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
         console.error('Error getting microphone stream', err);
         return null;
@@ -56,6 +58,41 @@ export async function prompMicrophone() {
             await new Promise(resolve => setTimeout(resolve, 1000 - (Date.now() - sm)));
         await showModal();
     }
+
+
+
+    if (stream) {
+        // make visualizer
+
+        let canvas = document.querySelector('#visualizer');
+        let context = new AudioContext();
+        let source = context.createMediaStreamSource(stream);
+        let analyser = context.createAnalyser();
+        source.connect(analyser);
+        analyser.fftSize = 256;
+        let bufferLength = analyser.frequencyBinCount;
+        let dataArray = new Uint8Array(bufferLength);
+        let barHeight;
+        let x = 0;
+        function renderFrame() {
+            const WIDTH = canvas.width;
+            const HEIGHT = canvas.height;
+            const barWidth = (WIDTH / bufferLength) * 2.5;
+            x = 0;
+            analyser.getByteFrequencyData(dataArray);
+            let ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i];
+                ctx.fillStyle = "#0000001a";
+                ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+            requestAnimationFrame(renderFrame);
+        }
+
+        renderFrame();
+    }
     return stream;
 }
 
@@ -84,8 +121,9 @@ export function getCookies() {
 }
 
 export function changeVolume(streams, id, volume, factor) {
-    let stream = streams.streams.get(id);
-    if (!stream) return;
+    let stream = streams.out_streams.get(id);
+    if (!stream) return console.error('Stream does not exists', id);
     stream.gain.gain.value = toFixedNumber(volume * factor, 2);
     stream.volume = volume;
+    console.log('Volume changed', id, volume);
 }

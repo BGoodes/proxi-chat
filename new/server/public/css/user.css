@@ -66,6 +66,7 @@
     overflow: hidden;
     border-bottom-left-radius: .5em;
     margin-top: .5em;
+    box-shadow: 0 0 10px var(--primary-shadow);
 }
 
 
@@ -89,6 +90,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.user-element .options .audio {
+    z-index: 9999;
 }
 
 .user-element .options .volume button.muted {

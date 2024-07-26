@@ -3,6 +3,7 @@ import Express, { RequestHandler } from "express";
 import { isAbsolute, join } from "path";
 import JwtManager, { JwtPayload } from "../security/JwtManager";
 import cookieParser from "cookie-parser";
+import { getIsProxied } from "./PeerController";
 
 export default class RestController {
 
@@ -13,11 +14,12 @@ export default class RestController {
     }
 
     init() {
+        this.express.set('trust proxy', getIsProxied());
         this.express.use(cookieParser());
         this.express.use(this.before.bind(this) as RequestHandler);
         this.express.use(Express.static(getPublicPath()));
 
-        this.express.use("/rtc", this.httpManager.peer.peerServer);
+        // this.express.use("/rtc", this.httpManager.peer.peerServer);
         this.express.use('/link', this.httpManager.main.linkhandler.linkRouter());
         this.express.use('/api', this.httpManager.main.linkhandler.apiRouter());
 
@@ -26,6 +28,8 @@ export default class RestController {
     }
 
     before(request: RestRequest, response: RestResponse, next: Express.NextFunction) {
+        response.setHeader('Access-Control-Allow-Origin', '*');
+        response.setHeader('Access-Control-Allow-Methods', 'GET, POST');
         var token = request.get('authorization')?.replace('Bearer ', '') || request.query.token || request.cookies['_uid'];
         request.data = {
             token: token,

@@ -38,9 +38,11 @@ export default class SocketConnection extends EventEmitter {
     connect(url, token) {
         this.socket = url && token ? io(url, {
             reconnection: true,
-            auth: { token }
+            auth: { token },
+            transports: ['websocket']
         }) : io({
-            reconnection: true
+            reconnection: true,
+            transports: ['websocket']
         });
         this.socket.on('error', this.onError.bind(this));
         this.socket.on('connect', this.onConnect.bind(this));

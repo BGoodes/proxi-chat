@@ -11,20 +11,20 @@ export default class HttpManager {
     server: HttpServer;
     rest: RestController;
     socket: SocketController;
-    peer: PeerController;
+    // peer: PeerController;
 
 
     constructor(public readonly main: Main) {
         this.rest = new RestController(this);
         this.server = isSslEnabled() ? createSecureServer(getSslOptions(), this.rest.express) : createServer(this.rest.express);
-        this.peer = new PeerController(this);
         this.socket = new SocketController(this);
+        // this.peer = new PeerController(this);
     }
 
     onUpdate() { }
 
     init() {
-        this.peer.init();
+        // this.peer.init();
         this.rest.init();
         this.socket.init();
     }

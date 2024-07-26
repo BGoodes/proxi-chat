@@ -19,92 +19,13 @@ const templateUser = `<li class="user-element">
   <audio class="audio"></audio>
   <div class="volume">
     <input type="range" class="volume-range" min="0" max="100" value="100">
-    <button class="btn muted">
+    <button class="btn button-mute">
       <i class="bi bi-volume-mute-fill"></i>
     </button>
   </div>
 </div>
 </li>`;
 const templateSession = `<li class="session-element"><a class="dropdown-item display">Action two</a></li>`;
-
-
-//     peerConnection.ontrack = (event) => {
-//         /**
-//          * @type {HTMLAudioElement}
-//          */
-//         let audio = document.querySelector(`audio[data-id="${player.id}"][data-session_id="${session.id}"][data-type="${session.type}"]`);
-//         if (!audio) return console.warn('Audio element not found.');
-//         audio.srcObject = event.streams[0];
-//         audio.play();
-
-//         var contexteAudio = new (window.AudioContext || window.webkitAudioContext)();
-//         var analyseur = contexteAudio.createAnalyser();
-//         let userDiv = document.querySelector(`li[data-id="${player.id}"][data-session_id="${session.id}"][data-type="${session.type}"]`);
-//         var canvas = userDiv.getElementsByClassName('visualizer')[0];
-//         if (!canvas || canvas.classList.contains('hide')) return console.warn('Canvas not found.');
-//         var ctx = canvas.getContext('2d');
-//         var audioSrc = contexteAudio.createMediaElementSource(userDiv.getElementsByClassName('user-audio')[0]);
-//         audioSrc.connect(analyseur);
-//         analyseur.connect(contexteAudio.destination);
-//         analyseur.fftSize = 256;
-//         var bufferLength = analyseur.frequencyBinCount;
-//         var dataArray = new Uint8Array(bufferLength);
-//         var WIDTH = canvas.width;
-//         var HEIGHT = canvas.height;
-//         var barWidth = (WIDTH / bufferLength) * 2.5;
-//         var barHeight;
-//         var x = 0;
-//         function renderFrame() {
-//             requestAnimationFrame(renderFrame);
-//             x = 0;
-//             analyseur.getByteFrequencyData(dataArray);
-//             ctx.fillStyle = "#000";
-//             ctx.fillRect(0, 0, WIDTH, HEIGHT);
-//             for (var i = 0; i < bufferLength; i++) {
-//                 barHeight = dataArray[i];
-//                 var r = barHeight + (25 * (i / bufferLength));
-//                 var g = 250 * (i / bufferLength);
-//                 var b = 50;
-//                 ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-//                 ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-//                 x += barWidth + 1;
-//             }
-//         }
-//         renderFrame();
-//     };
-
-
-function setupAudioVisualizer(canvas, audio) {
-  var contexteAudio = new (window.AudioContext || window.webkitAudioContext)();
-  var analyseur = contexteAudio.createAnalyser();
-  var ctx = canvas.getContext('2d');
-  var audioSrc = contexteAudio.createMediaElementSource(audio);
-  audioSrc.connect(analyseur);
-  analyseur.connect(contexteAudio.destination);
-  analyseur.fftSize = 256;
-  var bufferLength = analyseur.frequencyBinCount;
-  var dataArray = new Uint8Array(bufferLength);
-  var WIDTH = canvas.width;
-  var HEIGHT = canvas.height;
-  var barWidth = (WIDTH / bufferLength) * 2.5;
-  var barHeight;
-  var x = 0;
-  function renderFrame() {
-    x = 0;
-    analyseur.getByteFrequencyData(dataArray);
-
-    // clear with transparent
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    for (var i = 0; i < bufferLength; i++) {
-      barHeight = dataArray[i];
-      ctx.fillStyle = "#0000001a";
-      ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-      x += barWidth + 1;
-    }
-  }
-  return renderFrame;
-}
-
 
 export default class SessionManager extends EventEmitter {
   get nodeTitle() {
@@ -122,21 +43,18 @@ export default class SessionManager extends EventEmitter {
   get nodeSessionTitle() {
     return document.querySelector('#session-list-title');
   }
-
-  getAudioOfPlayer(player_id, session_id) {
-    return this.nodeUserList.querySelector(`li[data-session_id="${session_id}"][data-player_id="${player_id}"] .audio`);
-  }
-
   /**
    * @type {Map<string, Session>}
    */
   sessions = null;
 
   selectSessionId = null;
-  runtimeframe = [];
 
+  /**
+   * @type {Session | null}
+   */
   get selectedSession() {
-    return this.selectSessionId && this.sessions.get(this.selectSessionId);
+    return this.selectSessionId && this.sessions.get(this.selectSessionId) || null;
   }
 
   set selectedSession(value) {
@@ -151,12 +69,6 @@ export default class SessionManager extends EventEmitter {
   init() {
     this.sessions = new Map();
     this.clear();
-    this.runningFrame();
-  }
-
-  runningFrame() {
-    for (let rf of this.runtimeframe) rf.rf();
-    requestAnimationFrame(() => this.runningFrame());
   }
 
   clear() {
@@ -207,11 +119,8 @@ export default class SessionManager extends EventEmitter {
 
       for (let node of this.nodeUserList.children) {
         let player = selected.players.find(p => p.id === node.dataset.player_id && selected._id === node.dataset.session_id);
-        if (!player) {
-          node.remove();
-          let index = this.runtimeframe.findIndex(rf => rf.player_id === node.dataset.player_id && rf.session_id === node.dataset.session_id);
-          if (index >= 0) this.runtimeframe.splice(index, 1);
-        }
+        if (!player) node.remove();
+
       }
 
       let sortedplayer = selected.players.sort((a, b) => {
@@ -233,8 +142,6 @@ export default class SessionManager extends EventEmitter {
           if (player.id === selected.playerId) node.classList.add('me');
           node.querySelector('.infos').addEventListener('click', () => node.classList.toggle('expanded'));
           this.nodeUserList.appendChild(node);
-          let rf = setupAudioVisualizer(node.querySelector('.visualizer'), node.querySelector('.audio'));
-          this.runtimeframe.push({ rf, player_id: player.id, session_id: selected._id });
         }
         let display = node.querySelector('.display');
         display.textContent = player.display;
@@ -248,6 +155,49 @@ export default class SessionManager extends EventEmitter {
         else if (player.in_call || !player.peer_id) status.classList.remove('call');
         if (player.id === selected.playerId && !status.classList.contains('me')) status.classList.add('me');
         else status.classList.remove('me');
+
+        let audio = node.querySelector('.audio');
+        let volume = node.querySelector('.volume-range');
+        let muted = node.querySelector('.button-mute');
+
+        volume.addEventListener('input', () => {
+          audio.volume = volume.value / 100;
+          if (volume.value === '0') {
+            muted.classList.add('muted');
+            audio.muted = true;
+          }
+          else {
+            muted.classList.remove('muted');
+            audio.muted = false;
+          }
+        });
+
+        muted.addEventListener('click', () => {
+          if (audio.volume === 0) {
+            audio.volume = volume.value / 100;
+            if (volume.value !== '0') {
+              muted.classList.remove('muted');
+              audio.muted = false;
+            }
+          } else {
+            audio.volume = 0;
+            muted.classList.add('muted');
+            audio.muted = true;
+          }
+        });
+
+
+
+        if (volume.value !== '0') {
+          audio.volume = volume.value / 100;
+          audio.muted = false;
+          muted.classList.remove('muted');
+        } else {
+          audio.volume = 0;
+          audio.muted = true;
+          muted.classList.add('muted');
+        }
+
       }
     } else {
       this.nodeUserList.innerHTML = '';
@@ -275,6 +225,13 @@ export default class SessionManager extends EventEmitter {
       if (session.sessionId === session_id && session.type === type && (!player_id || session.playerId === player_id))
         return session;
     return null;
+  }
+
+
+  removeSession(id, type) {
+    let session = this.getSession(id, type);
+    if (session) this.sessions.delete(session._id);
+    this.render();
   }
 }
 
@@ -315,6 +272,10 @@ export class Session {
     return this._rawData.player.id;
   }
 
+  /**
+   * @type {Array<{id: string, display: string, avatar: string, peer_id: string, in_call: boolean}>}
+   * @readonly
+   */
   get players() {
     return this._rawData.players || [];
   }

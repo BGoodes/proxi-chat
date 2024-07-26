@@ -16,11 +16,13 @@ export default class PeerManager extends EventEmitter {
     async newPeer() {
         this.closePeer();
         this.calls = new Map();
-        this.me = new Peer({
-            path: "/rtc",
-            host: "/",
-            port: location.port,
-        });
+        // use  https: 0.peerjs.com 
+        this.me = new Peer();
+        // this.me = new Peer({
+        //     path: "/rtc",
+        //     host: location.hostname,
+        //     port: location.port,
+        // });
         this.me.on('open', this.onOpen.bind(this));
         this.me.on('error', this.onError.bind(this));
         this.me.on('call', this.onCall.bind(this));
@@ -54,6 +56,7 @@ export default class PeerManager extends EventEmitter {
     }
 
     onCall(call) {
+        console.log(`[Peer] ${call.peer} calling`);
         call.on('stream', stream => this.onCallStream(call, stream));
         call.on('error', err => this.onCallError(call, err));
         call.on('close', () => this.onCallClose(call));
@@ -62,20 +65,24 @@ export default class PeerManager extends EventEmitter {
     }
 
     onCallStream(call, stream) {
+        console.log(`[Peer] ${call.peer} stream received`);
         this.emit('call-stream', call, stream);
     }
 
     onCallError(call, err) {
+        console.error(`[Peer] ${call.peer} error`, err);
         this.emit('call-error', call, err);
         this.calls.delete(call.id);
     }
 
     onCallClose(call) {
+        console.log(`[Peer] ${call.peer} closed`);
         this.emit('call-close', call);
         this.calls.delete(call.id);
     }
 
     onError(err) {
+        console.error('[Peer] error', err);
         this.emit('error', err);
     }
 

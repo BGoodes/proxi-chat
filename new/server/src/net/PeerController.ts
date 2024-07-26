@@ -2,12 +2,20 @@ import { ExpressPeerServer, IClient, IMessage, PeerServerEvents } from "peer";
 import HttpManager from "./HttpManager";
 import Express from "express";
 
+// TODO: Implement https://github.com/Atlantis-Software/node-turn
+
 export default class PeerController {
 
     peerServer: PeerServerEvents & Express.Application;
 
     constructor(private readonly httpManager: HttpManager) {
-        this.peerServer = ExpressPeerServer(httpManager.server);
+        this.peerServer = ExpressPeerServer(httpManager.server, {    
+            corsOptions: {
+                origin: '*',
+                methods: ['GET', 'POST'],
+            },
+            proxied: getIsProxied()
+        });
     }
 
     init() {
@@ -32,4 +40,8 @@ export default class PeerController {
     onError(err: Error) {
         console.log('Peer error:', err);
     }
+}
+
+export function getIsProxied() {
+    return process.env.IS_PROXIED === 'true';
 }
