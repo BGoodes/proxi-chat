@@ -1,0 +1,43 @@
+:root {
+    --primary-color: #d6d6d6;
+    --primary-bg: #35312e;
+    --primary-border: #ffffff1a;
+    --primary-shadow: #0000001a;
+
+    --secondary-color: #35312e;
+    --secondary-bg: #d6d6d6;
+    --secondary-border: #0000001a;
+
+    --tertiary-color: #1f1c1a;
+    --tertiary-bg: #616161;
+    --tertiary-border: #0000001a;
+}
+
+.btn {
+    border-radius: 0.5em;
+    text-decoration: none;
+    color: var(--primary-color);
+    background-color: var(--primary-bg);
+    border: solid 1px var(--primary-border);
+    transition: background-color 0.1s, color 0.1s;
+}
+
+.btn:hover {
+    background-color: var(--secondary-bg);
+    color: var(--secondary-color);
+    border-color: var(--secondary-border);
+}
+
+.btn:active {
+    background-color: var(--tertiary-bg) !important;
+    color: var(--tertiary-color) !important;
+    border-color: var(--tertiary-border) !important;
+}
+
+.hide {
+    display: none !important
+}
+
+.dropup .dropdown-toggle::after {
+    margin-left: .5em;
+}

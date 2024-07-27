@@ -1,0 +1,5 @@
+fr\hactazia\proxichat\proxichat\UdpHandler.class
+fr\hactazia\proxichat\proxichat\UdpServer.class
+fr\hactazia\proxichat\proxichat\EventListener.class
+fr\hactazia\proxichat\proxichat\EventSender.class
+fr\hactazia\proxichat\proxichat\ProxiChatPlugin.class

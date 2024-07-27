@@ -1,0 +1,169 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+@import url("./system.css");
+@import url("./user.css");
+@import url("./modal.css");
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--primary-bg);
+    color: var(--primary-color);
+}
+
+.gridder {
+    display: grid;
+    grid-template-columns: 24em 1fr;
+    grid-template-rows: 6em 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "navbar navbar"
+        "users logs";
+    height: 100vh;
+    width: 100vw;
+}
+
+.gridder .navbar {
+    grid-area: navbar;
+}
+
+.gridder .users {
+    grid-area: users;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "session"
+        "userlist"
+        "options";
+    height: calc(100vh - 6em);
+}
+
+.gridder .logs {
+    grid-area: logs;
+    background-color: #35312e;
+    border-top-left-radius: 1em;
+    box-shadow: inset 0 0 10px var(--primary-shadow);
+    border-top: solid 1px var(--primary-border);
+    border-left: solid 1px var(--primary-border);
+    padding: 1em;
+}
+
+.gridder .users .userlist {
+    grid-area: userlist;
+    border-top: solid 1px var(--primary-border);
+    border-bottom: solid 1px var(--primary-border);
+    padding: 1em;
+    margin: 0;
+    list-style-type: none;
+    overflow: hidden auto;
+}
+
+.gridder .users .userlist>*:not(:first-child) {
+    margin-top: calc(2em - 2px);
+}
+
+.gridder .users .session {
+    grid-area: session;
+    padding: .5em 1em;
+}
+
+.gridder .users .session h3 {
+    width: 100%;
+    text-align: center;
+}
+
+.gridder .users>.options {
+    grid-area: options;
+    padding: 1em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.session-element {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+}
+
+.button-action:not(.active) .button-action-enable {
+    display: none;
+}
+
+.button-action.active .button-action-disable {
+    display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#playerlist .user .user-options .user-volume button:hover {
+    background-color: #d6d6d6;
+    color: #35312e;
+}
+
+#playerlist .user .user-options .user-volume button img {
+    width: 1em;
+    height: 1em;
+}
+
+#playerlist .user .user-options .user-volume button:hover img {
+    filter: brightness(0) invert(0);
+}
+
+
+#playerlist .user.you .user-options {
+    display: none;
+}
+
+
+
+
+#playerlist .user .user-info:hover {
+    background-color: #3e3a37;
+}
+
+#playerlist .user .user-info:active {
+    background-color: #534e4a;
+}
+
+.gridder .options {
+    position: relative;
+}
+
+.gridder .options .visualizer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}

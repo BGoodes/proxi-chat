@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProxiChat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="./js/script.js" type="module"></script>
+</head>
+
+<body>
+  <div class="gridder">
+    <div class="navbar"></div>
+    <div class="users">
+      <div class="session">
+        <h3 id="session-title">Display</h3>
+      </div>
+      <ul class="userlist" id="user-list"> </ul>
+      <div class="options">
+        <canvas id="visualizer" class="visualizer"></canvas>
+        <div class="dropup-center dropup">
+          <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="session-list-title"></button>
+          <ul class="dropdown-menu" id="session-list">
+            <li class="disconnect persitant session-element"><a class="dropdown-item">Déconnexion</a></li>
+          </ul>
+        </div>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button type="button" class="btn button-action" id="mute-button">
+            <div class="button-action-enable">
+              <i class="bi bi-mic-mute-fill"></i>
+            </div>
+            <div class="button-action-disable">
+              <i class="bi bi-mic-fill"></i>
+            </div>
+          </button>
+          <button type="button" class="btn button-action" id="audio-button">
+            <div class="button-action-enable">
+              <i class="bi bi-volume-up-fill"></i>
+            </div>
+            <div class="button-action-disable">
+              <i class="bi bi-volume-mute-fill"></i>
+            </div>
+          </button>
+          <button type="button" class="btn" id="settings-button">
+            <i class="bi bi-gear-fill"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <div class="logs" id="logger">
+
+    </div>
+  </div>
+  <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="modal-popup" tabindex="-1" aria-labelledby="modal-popup" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div id="microphone-required" class="text-center hide">
+            <i class="bi bi-mic-mute-fill display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Aucun microphone détecté</h5>
+            <p>Veuillez autoriser l'accès à votre microphone pour utiliser ProxiChat.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment faire
+                ?</a>
+            </p>
+          </div>
+          <div id="microphone-required-error" class="text-center hide">
+            <i class="bi bi-mic-mute-fill display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Erreur de microphone</h5>
+            <p>Impossible d'accéder à votre microphone.</p>
+            <p>Vous avez peut-être bloqué l'accès à votre microphone.</p>
+            <p class="mt-4">
+              <a onclick="location.reload()" class="btn" target="_blank">Réessayer</a>
+            </p>
+          </div>
+          <div id="no-in-session" class="text-center hide">
+            <i class="bi bi-geo-alt-fill display-3 text-info"></i>
+            <h5 class="modal-title my-4">Aucune session en cours</h5>
+            <p>Rejoignez une session pour discuter avec d'autres joueurs.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Je suis déjà dans un session...</a>
+            </p>
+          </div>
+          <div id="not-linked" class="text-center hide">
+            <i class="bi bi-link-45deg display-1 text-info"></i>
+            <h5 class="modal-title my-4">Vous n'êtes pas connecté</h5>
+            <p>Vous devez lier votre compte de jeu..</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment lier son compte ?</a>
+            </p>
+          </div>
+          <div id="double-window-detected" class="text-center hide">
+            <i class="bi bi-window-stack display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Fenêtre déjà ouverte</h5>
+            <p>Vous avez déjà une fenêtre ouverte.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Comment faire ?</a>
+            </p>
+          </div>
+          <div id="connection-error" class="text-center hide">
+            <i class="bi bi-wifi-off display-3 text-danger"></i>
+            <h5 class="modal-title my-4">Erreur de connexion</h5>
+            <p>Impossible de se connecter au serveur.</p>
+            <p class="mt-4">
+              <a href="https://proxichat.fr" class="btn" target="_blank">Réessayer</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="hide" data-bs-toggle="modal" data-bs-target="#modal-popup" id="modal-popup-btn"></button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+
+</html>
