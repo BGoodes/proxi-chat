@@ -67,8 +67,6 @@ This is just the beginning of the project, and it's more of a proof of concept a
  * Improve the graphical interface.
  * Enable account management (adding a database).
  * Write documentation on modding.
- * Move backend from node and express to bun and Hono.
- * Init a Vite TS project
  * ...
 
 ## License

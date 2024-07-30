@@ -1,7 +1,6 @@
 import { createServer } from "https";
 import express from "express";
 import { Server } from "socket.io";
-import sirv from "sirv";
 import { readFileSync } from "fs";
 
 import dotenv from "dotenv";
@@ -41,8 +40,6 @@ io.on("connection", (socket) => {
 app.use(express.json());
 app.use('/api/v1', setupRestRoutes(io));
 
-// Static files
-app.use(sirv('public'));
 server.listen(PORT, () => {
     console.log(`Server is running on the port ${PORT}`);
 })
