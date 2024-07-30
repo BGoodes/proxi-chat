@@ -40,6 +40,9 @@ io.on("connection", (socket) => {
 app.use(express.json());
 app.use('/api/v1', setupRestRoutes(io));
 
+//static
+app.use(express.static('public'));
+
 server.listen(PORT, () => {
     console.log(`Server is running on the port ${PORT}`);
 })
