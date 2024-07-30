@@ -1,3 +1,5 @@
+import io from 'socket.io-client';
+
 import PeerConnection from './peer-connection.js'
 import AudioManager from './audio-manager.js'
 import Visualizer from './visualizer.js';
